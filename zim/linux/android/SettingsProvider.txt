@@ -1,0 +1,14 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2013-07-22T15:56:42+08:00
+
+====== SettingsProvider ======
+Created 星期一 22 七月 2013
+
+Setting 默认值由 SettingProvider提供
+
+1.修改''frameworks/base/packages/SettingsProvider/res/values/defaults.xml''
+
+2.对于defaults.xml文件中没有定义的，需要在
+''frameworks/base/packages/SettingsProvider/src/com/android/providers/settings/DatabaseHelper.java''
+的''loadSystemSettings''函数中修改

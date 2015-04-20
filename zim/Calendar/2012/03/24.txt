@@ -1,0 +1,22 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-03-24T14:32:08+08:00
+
+====== 星期六 24  3月 2012 ======
+
+TAGS: android, wakelock
+
+android 2.2
+
+acquire_full_wake_lock和acquire_partial_wake_lock的区别：
+	从android的角度看，区别就是full_wake_lock在按下电源键时还是会sleep，而partial_wake_lock就不会。
+	从kernel的角度看，在“echo standby > request_state”时会把full_wake_lock清空。
+
+这里的命名比较混乱:
+	在用户空间:
+		acquire_full_wake_lock对应g_active_full_wake_locks,acquire_partial_wake_lock对应g_active_partial_wake_locks,
+	在内核空间:
+		android_lock_partial_suspend,android_lock_partial_suspend_auto_expire对应g_active_full_wake_locks,
+		android_lock_suspend,android_lock_suspend_auto_expire对应g_active_partial_wake_locks.
+		
+ps:g_active_full_wake_locks是表示lcd亮时处理链表,g_active_partial_wake_locks是lcd熄灭之后,检查的链表.

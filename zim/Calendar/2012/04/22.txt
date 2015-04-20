@@ -1,0 +1,26 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-22T01:01:45+08:00
+
+====== 星期日 22  4月 2012 ======
+
+TAGS: initramfs, rootfs, cpio, init, rdinit
+
+rootfs挂载流程：
+
+== 一 ==
+首先,rootfs_initcall(populate_rootfs)会先执行，
+如果是initrd_start~initrd_end之间的数据是initramfs, 那就将它解压到"/"，
+否则将它写到"/initrd.image"文件里以便后面处理。
+
+== 二 ==
+然后,内核启动过程中会去判断"rdinit="指定的执行文件是否存在，
+默认"rdinit=/init"，如果存在，则前面一步检测到的肯定是initramfs,
+不需要mount，直接执行这个文件;
+否则，通过prepare_namespace()去挂载相应的root设备，
+例如ramdisk,mtdblock,mmc etc.
+
+== note: ==
+如果制作的initramfs里面没有"/init"文件,而且kernel command line中也不
+指定rdinit,则内核不会将其作为initramfs,而是尝试以各种文件系统去挂载它，
+最终肯定失败。

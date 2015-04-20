@@ -1,0 +1,43 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2013-12-20T11:33:16+08:00
+
+====== 函数指针 ======
+Created 星期五 20 十二月 2013
+
+
+'''
+void wrap(void (*cb)(void))
+{
+    printf("wrap\n");
+    cb();
+}
+void callback(void)
+{
+    printf("callback\n");
+}
+int main(int argc, char *argv[])
+{
+    wrap(callback);
+    wrap(&callback);
+    wrap(*callback);
+
+    printf("%p %p %p\n", callback, &callback, *callback);
+
+    return 0;
+}
+
+'''
+
+** Notice **
+C语言规定函数名会被转换为指向这个函数的指针，
+除非这个函数名作为'&'操作符或'sizeof'操作符的操作数
+(注意：函数名用于sizeof的操作数是非法的)。
+
+* callback
+    函数名，一个用来表示函数入口地址的符号，使用中函数名会被转换成指向这个函数
+    的指针
+* &callback
+    获取函数的地址
+* *callback
+    callback是指向函数的指针，*callback则是取指针的值，即函数地址

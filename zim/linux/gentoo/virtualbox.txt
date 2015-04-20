@@ -1,0 +1,15 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-11-14T13:21:54+08:00
+
+====== virtualbox ======
+Created 星期一 14 十一月 2011
+
+Q:virtualbox-bin 安装windows没有声音
+
+A：
+1、使用media-libs/libsdl 1.2.13-r1版本;
+2、将/usr/portage/media-libs/libsdl/libsdl-1.2.14-r6.ebuild中的--disable-alsa-shared注释掉,
+	然后sudo ebuild /usr/portage/media-libs/libsdl/libsdl-1.2.14-r6.ebuild
+	manifest,再重新emerge libsdl即可。
+

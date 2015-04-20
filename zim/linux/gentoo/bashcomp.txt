@@ -1,0 +1,14 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-11-26T21:23:49+08:00
+
+====== bashcomp ======
+Created 星期六 26 十一月 2011
+
+For sudo you need to enable the base eselect bashcomp module: 
+eselect bashcomp enable base
+
+
+or you can use this:
+complete -cf sudo
+complete -cf man

@@ -1,0 +1,166 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-05-12T15:41:01+08:00
+
+====== lvm+raid ======
+Created 星期一 12 五月 2014
+
+== LVM ==
+
+动态调整逻辑磁盘容量
+
++---------------------------+
++           fs              +
++---------------------------+
++  logic volume -- LV       +
++---------------------------+
++  volume group -- VG       +
++---------------------------+
++  physical volume -- PV    +
++---------------------------+
+{{./lvm.png}}
+
+== RAID ==
+
+提升磁盘性能和安全性
+
+* raid0(stripe)
+    性能最佳
+{{./raid0.gif}}
+
+* raid1(mirror)
+    完整备份
+{{./raid1.gif}}
+
+* raid 0+1, raid 1+0
+    raid0与raid1混合使用
+{{./raid0+1.gif}}
+
+* raid5
+    性能与备份的平衡
+{{./raid5.gif}}
+
+* all
+{{./raid.jpg}}
+
+== LVM + RAID ==
+
+一个可以同时提供'在线调整磁盘容量'和'高性能读写'的解决方案
+
+== LVM example ==
+
+* create loop
+'''
+dd if=/dev/zero of=/tmp/disk1 bs=1M count=100
+dd if=/dev/zero of=/tmp/disk2 bs=1M count=100
+dd if=/dev/zero of=/tmp/disk3 bs=1M count=100
+losetup --find --show /tmp/disk1
+losetup --find --show /tmp/disk2
+losetup --find --show /tmp/disk3
+'''
+
+* create PV
+'''
+pvcreate /dev/loop0 /dev/loop1 /dev/loop2
+pvdisplay
+'''
+
+* create VG
+'''
+# add loop0 and loop1 to test_vg
+vgcreate test_vg /dev/loop0 /dev/loop1
+vgdisplay
+'''
+
+* create LV
+'''
+lvcreate --size 100M --name lv1 test_vg
+lvdisplay
+'''
+
+* create fs
+'''
+mkfs.reiserfs /dev/test_vg/lv1
+'''
+
+* mount fs
+'''
+mount /dev/test_vg/lv1 /mnt
+'''
+
+* enlarge fs
+'''
+pvcreate /dev/sdx
+vgextend test_vg /dev/sdx
+lvextend -L +1G /dev/test_vg/lv1
+resize_reiserfs /dev/test_vg/lv1
+'''
+
+* shrink fs
+'''
+resize_reiserfs -s -1G /dev/test_vg/lv1
+lvreduce -L -1G /dev/test_vg/lv1
+'''
+
+* remove PV
+'''
+# we use loop2 to replace loop0
+vgextend test_vg /dev/loop2
+# disable /dev/loop0 allocation
+pvchange -x n /dev/loop0
+# move data in loop0 to loop2
+pvmove /dev/loop0 /dev/loop2
+# remove loop0 from VG
+vgreduce test_vg /dev/loop0
+# remove loop0 from PV
+pvremove /dev/loop0
+'''
+
+
+== RAID example ==
+
+* fdisk
+
+如果MD驱动被编译到内核中,当内核调用执行MD驱动时会自动查找分区为FD(Linux raid
+autodetect)格式的磁盘.所以一般会使用fdisk工具将磁盘分区,再设置为FD的磁盘.
+
+如果MD驱动是模块形式加载,需要在系统运行时由用户层脚本控制RAID阵列启动运行.
+'''
+mdadm -A -s
+'''
+
+* create array
+'''
+# raid0
+mdadm --create /dev/md0 --level=0 -n 2 /dev/loop0 /dev/loop1
+# raid5 + spare-disk
+mdadm --create /dev/md0 --level=5 -n 3 -x 1 /dev/loop0 /dev/loop1 /dev/loop2 /dev/loop3
+'''
+
+* mdadm.conf
+'''
+echo "DEVICE /dev/loop0 /dev/loop1" > /etc/mdadm.conf
+mdadm --detail --scan >> /etc/mdadm.conf
+# start up RAID devices listed in config file
+mdadm --assemble --scan
+# shut down RAID devices
+mdadm --stop --scan
+'''
+
+* add/remove disk
+__raid0 不能动态增减磁盘, raid5 可以.__
+'''
+# add spare disk
+mdadm /dev/md0 --add /dev/loop2
+# make the spare disk active
+mdadm /dev/md0 --grow --raid-devices=4
+
+# remove a disk
+mdadm /dev/md0 --fail /dev/loop2
+mdadm /dev/md0 --remove /dev/loop2
+'''
+
+
+== see also ==
+http://www.babyface2.com/NetAdmin/16200705SoftRAIDLVM01/
+http://www.babyface2.com/NetAdmin/18200707SoftRAIDLVM02/

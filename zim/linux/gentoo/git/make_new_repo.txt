@@ -1,0 +1,103 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-07-22T14:31:47+08:00
+
+====== make new repo ======
+Created 星期二 22 七月 2014
+
+<markdown>
+
+#新建git仓库#
+
+从rk拿到rk2928_wireless_hdmi_dongle.tar.bz2文件,需要在150服务器上建立自己的git仓库.
+
+以下所有操作都在150服务器上.
+
+##a. 建立空仓库##
+我们的git仓库使用gitolite-admin来管理,需要在gitolite-admin中添加新的仓库描述.
+
+    cd /work/rockchip/gitolite-admin
+
+在conf/gitolite.conf中添加仓库描述:
+
+    repo rk2928_wireless_hdmi_dongle
+        RW+ = @admin
+        RW  = @all
+
+提交修改:
+
+    git add conf/gitolite.conf
+    git commit -m "add rk2928_wireless_hdmi_dongle repo."
+    
+提交后就会生成新的空仓库: git@192.168.1.150:rk2928_wireless_hdmi_dongle.git
+
+##b. 更新RK代码##
+把从RK拿到的rk2928_wireless_hdmi_dongle.tar.bz2解压出来,目录结构如下:
+
+    .
+    └─ .git/
+
+一般从rk拿到的仓库都已经有一个origin远程仓库,指向rk服务器.
+
+开始更新:
+
+    git checkout -- .
+    git pull origin master
+
+##c. 提交代码##
+
+###1. 添加远程imt仓库###
+把刚才新建的空仓库添加进来:
+
+    git remote add imt git@192.168.1.150:rk2928_wireless_hdmi_dongle.git
+    git fetch imt
+
+这样现在就有两个远程仓库了, origin跟踪rk仓库, imt跟踪我们新建的仓库:
+
+    origin --> git@www.rockchip.com.cn:rk2928/box/wireless_hdmi_dongle
+    imt    --> git@192.168.11.150:rk2928_wireless_hdmi_dongle.git
+
+###2. 添加跟踪分支###
+基于master分支建立一个tmp分支,并设置其跟踪imt仓库的master分支
+
+    git branch -B tmp --track imt/master
+    
+###3. 同步代码到imt仓库###
+把本地tmp分支推到imt仓库的master分支
+
+    git push imt tmp:master
+
+到这里,新的仓库已经建好,可以在其他机器克隆代码:
+
+    git clone git@192.168.1.150:rk2928_wireless_hdmi_dongle.git
+
+#同步RK仓库#
+因为rk仓库经常会更新,所以我们需要定期同步他们的代码到我们的仓库.
+
+##a. 更新rk代码##
+从rk仓库拉取最新代码到master分支:
+
+    cd /work/rockchip/dgbox/rk2928_wireless_hdmi_dongle
+    git checkout master
+    git pull origin master
+
+##b. 更新imt代码##
+从imt仓库拉取最新代码到tmp分支:
+
+    git checkout tmp
+    git pull imt master:tmp
+
+##c. 合并代码##
+把master分支合并到tmp分支:
+
+    git checkout tmp
+    git merge master
+
+##d. 解决冲突##
+合并代码过程中一般都会出现代码冲突,可以用git status列出冲突文件,然后手动修改提交.
+
+##e. 更新imt仓库##
+
+    git push imt tmp:master
+
+</markdown>

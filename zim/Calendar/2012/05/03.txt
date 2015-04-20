@@ -1,0 +1,17 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-05-03T10:33:31+08:00
+
+====== 星期四 03  5月 2012 ======
+
+TAGS: ncurses
+
+curses keeps two data structures representing the terminal screen:
+a physical screen,describing what is actually on the screen,
+and a virtual screen, describing what the programmer wants to have on the screen
+
+wnoutrefresh: copies the named window to the virtual screen
+doupdate: compares  the  virtual screen to the physical screen and does the actual update
+touchwin: pretending that the entire window has been changed
+
+

@@ -1,0 +1,40 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-11-06T18:21:59+08:00
+
+====== lubuntu ======
+Created 星期四 06 十一月 2014
+
+** guest logout hang **
+'''
+apt-get install psmisc
+'''
+
+** not-root user cannot access network **
+it tell:
+'''
+socket(PF_INET, SOCK_DGRAM, IPPROTO_IP) = -1 EACCES (Permission denied)
+'''
+
+    you're using an android derived kernel, and you have
+    CONFIG_ANDROID_PARANOID_NETWORK set.  In this case you need to create
+    a group called aid_inet and add yourself (and any other users wanting
+    to use the network) to that group:
+    
+    As root:
+      groupadd -g 3003 aid_inet
+      usermod -G aid_inet your_login_name
+
+** cannot unlock from xscreensaver if login as guest account **
+append
+'''  
+if [ $(id -un | awk '/guest-/ { print "guest" }') = "guest" ]; then
+    exit 0
+fi
+'''
+to '''/usr/bin/lxlock'''
+
+* no content in language menu on lightdm login bar, just '[language_code]'
+'''
+apt-get install language-pack-gnome
+'''

@@ -1,0 +1,563 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2013-10-19T12:33:32+08:00
+
+====== camera ======
+Created 星期六 19 十月 2013
+
+'''hardware/'''
+
+'''frameworks/av/services/camera/libcameraservice/'''
+
+'''frameworks/av/camera/'''
+
+'''frameworks/base/core/jni/android_hardware_Camera.cpp'''
+
+'''frameworks/base/core/java/android/hardware/Camera.java'''
+
+'''packages/apps/Camera/'''
+
+
+{{./1626080940458833497.jpg}}
+现在我们尝试从最开始的启动流程来熟悉android camera的整体framework流程:
+首先从上图的各个步骤来逐一分析流程，后续会根据具体的一些点进行内容的添加和扩充：
+ 
+
+== Camera.java ==
+packages/apps/camera/src/com/android/
+最上层的应用就是从这个文件开始。
+该文件集中了整个android上层应用的所有相关内容，当然更多的则为界面的代码实现。
+如果出现了camera应用界面的问题(当然除了camera拍摄区域内容外)，可以从android的代码入手。
+ 
+
+== Camera.java ==
+frameworks\base\core\java\android\hardware\
+该文件中主要是对native函数接口的调用，当然也包括一些本地的函数实现。
+也可以认为该文件是实现了从java层调用c++层代码函数接口。
+也就是我们需要去了解的一点JNI机制。
+ 
+
+== android_hardware_Camera.cpp ==
+该文件就是JNI的c++层的代码实现。
+通过camera的类实例来调用camera类的相关接口。
+ 
+
+== Camera.cpp/Camera.h ==
+对于上层应用来说，camera.cpp是最为直接的函数调用和实现。
+继承于ICameraClient类,典型的Client端的接口实例。
+ 
+
+== BnCameraClient/BpCameraClient ==
+IPC通讯所需的函数接口实现，继承于ICameraClient类。
+ 
+
+== ICameraClient.cpp/ICameraClient.h ==
+Client/Service模式下的Client端实现
+ 
+
+== ICameraService.cpp/ICameraService.h ==
+Client/Service模式下service端实现
+ 
+
+== BnCameraService/BpCameraService ==
+IPC通讯所需的函数接口实现，继承于ICameraService类。
+ 
+
+== CameraService.cpp/CameraService.h ==
+继承于BnCameraService类。
+是对BnCameraService函数接口的实现，其本质也是对CameraService的内部类Client函数接口的调用。
+ 
+
+== Client(CameraService内部类) ==
+该类才是真正的底层函数实现，其通过openCameraHardware()得到camera硬件实例对象进行操作。
+其继承于ICamera类,是对ICamera类函数接口的实现。
+
+
+接下来，我们通过对流程的步步分析来将camera整体串接起来:
+1．首先则看看camera.java的 onCreate函数入口，针对android的所有应用，onCreate函数入口作为跟踪和了解应用架构的首选。
+'''
+@Override
+public void onCreate(Bundle icicle) {
+    super.onCreate(icicle);
+    devlatch = new CountDownLatch(1);
+'''
+CountDownLatch()关于这个类，可以简单的理解为它是用来线程之间的等待处理，当然这里采用的计数为1，则可以简单理解为一个计数开关来控制调用了tlatch.await()函数的进程，方式就是将devlatch的计数减为0(countDown() )。
+这里启动了一个线程用来打开camera服务，而打开过程则比较费时(一般在2s左右)，故单独启用一个线程避免应用线程阻塞。
+'''
+Thread startPreviewThread = new Thread(new Runnable() {
+    CountDownLatch tlatch = devlatch;
+    public void run() {
+        try {
+            mStartPreviewFail = false;
+            ensureCameraDevice();
+
+            // Wait for framework initialization to be complete before
+            // starting preview
+            try {
+                tlatch.await();
+            } catch (InterruptedException ie) {
+                mStartPreviewFail = true;
+            }
+            startPreview();
+        } catch (CameraHardwareException e) {
+            // In eng build, we throw the exception so that test tool
+            // can detect it and report it
+            if ("eng".equals(Build.TYPE)) {
+                throw new RuntimeException(e);
+            }
+            mStartPreviewFail = true;
+        }
+    }
+});
+startPreviewThread.start();
+'''
+在这里，需要跟进ensureCameraDevice();该函数，可以看到其实现为：
+'''
+private void ensureCameraDevice() throws CameraHardwareException {
+    if (mCameraDevice == null) {
+        mCameraDevice = CameraHolder.instance().open();
+        mInitialParams = mCameraDevice.getParameters();
+    }
+}
+'''
+当前mCameraDevice()实例为null,则会调用CameraHolder.instance().open()函数来创建mCameraDevice对象实例。
+private android.hardware.Camera mCameraDevice;
+    跟进CameraHolder.instance().open()，进入到了CameraHolder类中：
+'''
+public synchronized android.hardware.Camera open()
+    throws CameraHardwareException {
+    Assert(mUsers == 0);
+    if (mCameraDevice == null) {
+        try {
+            mCameraDevice = android.hardware.Camera.open();
+        } catch (RuntimeException e) {
+            Log.e(TAG, "fail to connect Camera", e);
+            throw new CameraHardwareException(e);
+        }
+        mParameters = mCameraDevice.getParameters();
+    } else {
+        ……
+'''
+下面大概介绍下我对CameraHolder的理解：
+1、CameraHolder对mCameraDevice实例进行短暂的保留(keep()函数中可以设定这个保留时长,一般默认为3000ms)，避免用户在短暂退出camera又重新进入时，缩短camera启动时长(正如之前所说，打开CameraDevice时间较长)
+2、CameraHolder并有一个关键的计数mUsers用来保证open()和release()的配套调用，避免多次重复释放或者打开(上层应用的保护措施之一)。
+
+2．第一步的完成，进而跳转到了android.hardware.Camera类中的open()函数接口调用。
+'''
+public static Camera open() {
+    return new Camera();
+}
+'''
+静态函数，也就可以通过类名直接调用，open()函数中去创建一个Camera的实例。
+'''
+Camera() {
+    mShutterCallback = null;
+    mRawImageCallback = null;
+    mJpegCallback = null;
+    mPreviewCallback = null;
+    mPostviewCallback = null;
+    mZoomListener = null;
+
+    Looper looper;
+    if ((looper = Looper.myLooper()) != null) {
+        mEventHandler = new EventHandler(this, looper);
+    } else if ((looper = Looper.getMainLooper()) != null) {
+        mEventHandler = new EventHandler(this, looper);
+    } else {
+        mEventHandler = null;
+    }
+
+    native_setup(new WeakReference<Camera>(this));
+}
+'''
+在Camera构造函数中有这个关键的一步,最开始的一些callback可以认为它们最终被底层调用到(至于具体流程后面会讲到)。EventHandler和Looper我们暂时跳过，知道它是消息处理就行了。最后也就是最为关键的函数接口调用：native_setup
+private native final void native_setup(Object camera_this);
+典型的native函数接口声明，说明并非camera类的本地函数实现，也就意味着会通过JNI(Java Native Interface)调用对用C++文件中的函数接口。
+
+3．通过代码搜索，或者如果你清楚JNI文件路径也可以去该路径下找。
+ 
+其实这边有个小技巧，虽然不一定都通用，但可以试试看：
+java类的package名往往可以作为寻找相应JNI文件的途径：
+package android.hardware;
+则就可以通过android.hardware.camera.cpp来寻找(其实还是归咎于android的规范命名规则)。
+ 
+跳转到android_hardware_Camera.cpp中寻找native_setup()所对应的JNI函数接口：
+'''
+static JNINativeMethod camMethods[] = {
+    { "native_setup",
+        "(Ljava/lang/Object;)V",
+        (void*)android_hardware_Camera_native_setup },
+    { "native_release",
+        "()V",
+        (void*)android_hardware_Camera_release },
+    { "setPreviewDisplay",
+        "(Landroid/view/Surface;)V",
+        (void *)android_hardware_Camera_setPreviewDisplay },
+    ……
+'''
+而camMethods[]在什么时候映射的那？继续看：
+'''
+int register_android_hardware_Camera(JNIEnv *env) {
+
+    // Register native functions
+    return AndroidRuntime::registerNativeMethods(env, "android/hardware/Camera",
+            camMethods,NELEM(camMethods));
+}
+'''
+最终在AndroidRuntime.cpp中被调用：
+REG_JNI(register_android_hardware_Camera),
+说明如果我们自己要添加JNI接口实现的话，这些地方也需要添加相应的代码(具体在AndroidRuntime.cpp的细节我没深看，也不做介绍)。
+简单介绍： JNINativeMethod的第一个成员是一个字符 串，表示了JAVA本地调用方法的名称，这个名称是在JAVA程序中调用的名称；第二个成员也是一个字符串，表示JAVA本地调用方法的参数和返回值；第三个成员是JAVA本地调用方法对应的C语言函数。
+
+跟进观察android_hardware_Camera_native_setup()函数的实现：
+'''
+// connect to camera service
+static void android_hardware_Camera_native_setup(JNIEnv *env, jobject thiz, jobject weak_this)
+{
+    sp<Camera> camera = Camera::connect();
+
+    if (camera == NULL) {
+        jniThrowException(env, "java/lang/RuntimeException",
+                "Fail to connect to camera service");
+        return;
+    }
+    ….
+}
+'''
+初步可以认为Camera::connect()的函数调用时返回了一个Camera 的实例对象。
+ 
+4．通过上述的跟进流程来到了针对上层应用而言最为直接的类：camera.cpp：
+对Camera::connect函数的调用如下：
+'''
+sp<Camera> Camera::connect()
+{
+    LOGV("connect");
+    sp<Camera> c = new Camera();
+    const sp<ICameraService>& cs = getCameraService();
+    if (cs != 0) {
+        c->mCamera = cs->connect(c);
+    }
+    if (c->mCamera != 0) {
+        c->mCamera->asBinder()->linkToDeath(c);
+        c->mStatus = NO_ERROR;
+    } else {
+        c.clear();
+    }
+    return c;
+}
+'''
+首先是创建一个camera对象实例，然后通过调用getCameraService()去取得ICameraService的服务实例：
+'''
+// establish binder interface to camera service
+const sp<ICameraService>& Camera::getCameraService()
+{
+    Mutex::Autolock _l(mLock);
+    if (mCameraService.get() == 0) {
+        sp<IServiceManager> sm = defaultServiceManager();
+        sp<IBinder> binder;
+        do {
+            binder = sm->getService(String16("media.camera"));
+            if (binder != 0)
+                break;
+            LOGW("CameraService not published, waiting...");
+            usleep(500000); // 0.5 s
+        } while(true);
+        if (mDeathNotifier == NULL) {
+            mDeathNotifier = new DeathNotifier();
+        }
+        binder->linkToDeath(mDeathNotifier);
+        mCameraService = interface_cast<ICameraService>(binder);
+    }
+    LOGE_IF(mCameraService==0, "no CameraService!?");
+    return mCameraService;
+}
+'''
+这边就涉及到了ServiceManager()对服务的管理，在这之前Camera的服务已经注册到了ServiceManager中，我们可以通过服务字串(media.camera)来获得camera service(其本质得到的是CameraService的实例对象，虽然通过类型上溯转换成父类ICameraService，对ICameraService对象的函数调用本质是调用到了CameraService的函数实现)。
+在得到camera service后，返回之前的步骤：当得到的cs即cameraservice实例存在时，通过调用cs->connect(c)去得到ICamera实例，并赋值给了camera实例的一个类成员ICamera  mCamera：
+if (cs != 0) {
+    c->mCamera = cs->connect(c);
+5．接下来则涉及到ICamraService的相关调用关系，其实这个地方需要去弄清楚一些函数接口的实现在具体哪些文件中，因为存在较多的虚函数。
+    继续流程，上一步走到了cs->connect()，也就是ICameraService的connect()函数接口。
+'''
+class ICameraService : public IInterface
+{
+    public:
+        enum {
+            CONNECT = IBinder::FIRST_CALL_TRANSACTION,
+        };
+
+    public:
+        DECLARE_META_INTERFACE(CameraService);
+
+        virtual sp<ICamera>     connect(const sp<ICameraClient>& cameraClient) = 0;
+};
+'''
+可以发现该connect()接口为一个纯虚函数，需要ICameraService的子类对该接口进行实现，从而对connect()的调用则会映射到ICameraService子类的具体实现。
+关于ICameraService的实例问题，目前暂时跳过(后面马上就会讲到)，简单认为这个时候会调用到其一个子类的实现：
+'''
+class BpCameraService: public BpInterface<ICameraService>
+{
+    public:
+        BpCameraService(const sp<IBinder>& impl)
+            : BpInterface<ICameraService>(impl)
+        {
+        }
+
+        // connect to camera service
+        virtual sp<ICamera> connect(const sp<ICameraClient>& cameraClient)
+        {
+            Parcel data, reply;
+            data.writeInterfaceToken(ICameraService::getInterfaceDescriptor());
+            data.writeStrongBinder(cameraClient->asBinder());
+            remote()->transact(BnCameraService::CONNECT, data, &reply);
+            return interface_cast<ICamera>(reply.readStrongBinder());
+        }
+};
+'''
+
+BpCameraService为代理类，其主要用途为Binder通讯机制即进程间的通讯(Client/Service)，最终还是会调用BnCameraService的具体实现，即：
+'''
+status_t BnCameraService::onTransact(
+    uint32_t code, const Parcel& data, Parcel* reply, uint32_t flags)
+{
+    switch(code) {
+        case CONNECT: {
+            CHECK_INTERFACE(ICameraService, data, reply);
+            sp<ICameraClient> cameraClient
+             = interface_cast<ICameraClient>(data.readStrongBinder());
+            sp<ICamera> camera = connect(cameraClient);
+            reply->writeStrongBinder(camera->asBinder());
+            return NO_ERROR;
+        } break;
+        default:
+            return BBinder::onTransact(code, data, reply, flags);
+    }
+}
+'''
+而BnCameraService(为实现类)类继承于ICameraService，并且也并没有对connect()纯虚函数进行了实现，同样意味着其实该调用的实质是BnCameraService的子类实现。
+毕竟虚函数的调用没有实例肯定是没有意义的，说明我们需要找到对connect()纯虚函数的实现子类即继承于BnCameraService。
+ 
+6．结合上面所述，可以寻找到了继承于BnCameraService的子类CameraService.cpp：
+这时虽然找到了CameraService该类，但是你肯定会问到该类实例的创建在什么地方哪？再后头看CameraService启动注册的地方：
+'''
+int main(int argc, char** argv)
+{
+    sp<ProcessState> proc(ProcessState::self());
+    sp<IServiceManager> sm = defaultServiceManager();
+    LOGI("ServiceManager: %p", sm.get());
+    AudioFlinger::instantiate();
+    MediaPlayerService::instantiate();
+    CameraService::instantiate();
+    AudioPolicyService::instantiate();
+    ProcessState::self()->startThreadPool();
+    IPCThreadState::self()->joinThreadPool();
+}
+'''
+这个main函数位于main_mediaserver.cpp中，而mediaserver是在系统开始的时候就启动起来的server端（MediaServer，在系统启动时由init所启动，具可参考init.rc文件），进而将相关的服务也创建了实例。
+跟进CameraService::instantiate()函数实现，可以发现：
+'''
+void CameraService::instantiate() {
+    defaultServiceManager()->addService(
+            String16("media.camera"), new CameraService());
+}
+'''
+创建了一个CameraService实例 ，并给定了CameraService的服务字串为”media.camera”，而之前在通过ServiceManager获取CameraService的时候，所调用的接口为binder = sm->getService(String16("media.camera"));，两者保持了一样的字符串。
+'''
+if (mCameraService.get() == 0) {
+        sp<IServiceManager> sm = defaultServiceManager();
+        sp<IBinder> binder;
+        do {
+            binder = sm->getService(String16("media.camera"));
+            if (binder != 0)
+                break;
+            LOGW("CameraService not published, waiting...");
+            usleep(500000); // 0.5 s
+        } while(true);
+        if (mDeathNotifier == NULL) {
+            mDeathNotifier = new DeathNotifier();
+        }
+        binder->linkToDeath(mDeathNotifier);
+        mCameraService = interface_cast<ICameraService>(binder);
+}
+'''
+结合上述分析，此处的binder对象其实为CameraService类实例(多态类型转换)。
+interface_cast<ICameraService>(binder)宏映射，需要展开：
+'''
+template<typename INTERFACE>
+inline sp<INTERFACE> interface_cast(const sp<IBinder>& obj)
+{
+    return INTERFACE::asInterface(obj);
+}
+INTERFACE::asInterface(obj);宏映射，继续展开可得：
+sp<I##INTERFACE> I##INTERFACE::asInterface(const sp<IBinder>& obj)  \
+    {                                                                  \
+        sp<I##INTERFACE> intr;                                        \
+        if (obj != NULL) {                                              \
+            intr = static_cast<I##INTERFACE*>(                           \
+                obj->queryLocalInterface(                               \
+                        I##INTERFACE::descriptor).get());                 \
+            if (intr == NULL) {                                          \
+                intr = new Bp##INTERFACE(obj);                          \
+            }                                                       \
+        }                                                           \
+        return intr;                                                   \
+}
+'''
+(其上的宏展开都是在IMPLEMENT_META_INTERFACE(CameraService, "android.hardware.ICameraService");中实现的)
+此处又创建了一个BpCameraService(new Bp##INTERFACE)对象并将binder对象(obj)传入到BpCameraService的构造函数中。
+虽然获取的时候通过多态将CameraService实例转换成了BnCameraService  也进一步解释了为什么ICameraService子类BnCameraservice中的connect函数实质会调用到CameraService中函数实现了。
+于是就调用到了CameraService的connect函数接口：
+'''
+sp<ICamera> CameraService::connect(const sp<ICameraClient>& cameraClient) {
+…..
+// create a new Client object
+    client = new Client(this, cameraClient, callingPid);
+    mClient = client;
+    if (client->mHardware == NULL) {
+        client = NULL;
+        mClient = NULL;
+        return client;
+}
+…..
+}
+'''
+创建了一个Client实例对象，并将该实例对象赋值给CameraSevice的类成员mClient,方便其实函数接口对Client的调用。
+在这之前需要提及它的一个内部类Client，该类才是最为关键的函数实现,CameraService的一些接口都会调用到其Client实例的具体函数。
+
+7．那么现在的关键就是Client类了·进一步跟进：
+'''
+CameraService::Client::Client(const sp<CameraService>& cameraService,
+        const sp<ICameraClient>& cameraClient, pid_t clientPid)
+{
+    ......
+    mCameraService = cameraService;
+    mCameraClient = cameraClient;
+    mClientPid = clientPid;
+    mHardware = openCameraHardware();
+}
+'''
+将cameraService和cameraClient的实例分别赋值给了Client的类成员变量。
+另外openCameraHardware()是值得注意的地方，也就是连接上层应用和底层驱动的关键，通过调用openCameraHardware()得到了一个CameraHardwareInterface实例对象，并赋值给自己的类成员：`
+sp<CameraHardwareInterface> mHardware;
+对hardware的操作就是通过该对象完成的，所以说真正意义上的功能实现其实就是在这里，即client类的函数接口调用。
+对于hardware的东东咱们暂时不去关注吧。
+那么我们再次仔细研究下Client类的继承关系(这些继承关系很容易混乱，涉及到较多的多态类型转换)，这个其实往往都很关键：
+{{./2007479533902084781.jpg}}
+Client继承于BnCamera，而BnCamera则继承于ICamera，也就是说Client继承了ICamera,实现了ICamera中的函数。
+进而发现，原来绕一个大圈，把最开始的图简化下：
+{{./2853874788870587537.jpg}}
+8．除此之外还有两个步骤或许需要去研究下：
+先从单一函数去跟进，看具体一些callback的实现流程：
+'''
+// callback from camera service
+void Camera::notifyCallback(int32_t msgType, int32_t ext1, int32_t ext2)
+{
+    sp<CameraListener> listener;
+    {
+        Mutex::Autolock _l(mLock);
+        listener = mListener;
+    }
+    if (listener != NULL) {
+        listener->notify(msgType, ext1, ext2);
+    }
+}
+'''
+这是Camera类中一个callback函数实现，但其本质在哪？先看camera类的继承关系：
+ {{./2125136074167368290.jpg}}
+通过以上的继承关系，继续跟进其父类ICameraClient:
+'''
+class ICameraClient: public IInterface
+{
+public:
+    DECLARE_META_INTERFACE(CameraClient);
+ 
+    virtual void  notifyCallback(int32_t msgType, int32_t ext1, int32_t ext2) = 0;
+    virtual void  dataCallback(int32_t msgType, const sp<IMemory>& data) = 0;
+    virtual void dataCallbackTimestamp(nsecs_t timestamp, int32_t msgType, const     sp<IMemory>& data) = 0;
+};
+'''
+其中notifyCallback()又是纯虚函数,则同样说明实现在其子类BpCameraClient中：
+'''
+// generic callback from camera service to app
+void notifyCallback(int32_t msgType, int32_t ext1, int32_t ext2)
+{
+    LOGV("notifyCallback");
+    Parcel data, reply;
+    data.writeInterfaceToken(ICameraClient::getInterfaceDescriptor());
+    data.writeInt32(msgType);
+    data.writeInt32(ext1);
+    data.writeInt32(ext2);
+    remote()->transact(NOTIFY_CALLBACK,data, &reply, IBinder::FLAG_ONEWAY);
+}
+'''
+然后通过Binder通讯调用到BnCameraClient中实现：
+'''
+status_t BnCameraClient::onTransact(
+    uint32_t code, const Parcel& data, Parcel* reply, uint32_t flags)
+{
+    switch(code) {
+        case NOTIFY_CALLBACK: {
+            LOGV("NOTIFY_CALLBACK");
+            CHECK_INTERFACE(ICameraClient, data, reply);
+            int32_t msgType = data.readInt32();
+            int32_t ext1 = data.readInt32();
+            int32_t ext2 = data.readInt32();
+            notifyCallback(msgType, ext1, ext2);
+            return NO_ERROR;
+        } break;
+                   ….
+}
+'''
+进而调用到了Camera.cpp中的函数实现了，但或许你有疑问，这些callback是涉及到一些驱动的callback，哪怎么跟驱动联系起来那？
+    结合之前对hardware接口调用的类Client，进一步可以发现callback的处理同样是在Client类实例化的时候：
+'''
+CameraService::Client::Client(const sp<CameraService>& cameraService,
+        const sp<ICameraClient>& cameraClient, pid_t clientPid)
+{
+         …..
+         mHardware->setCallbacks(notifyCallback,
+                               dataCallback,
+                               dataCallbackTimestamp,
+                               mCameraService.get());
+…..
+}
+'''
+调用了mHardware将callback传入，但此处的notifyCallback并不是camera.cpp中的函数，而是client类的notifyCallback函数。
+    再继续看client类中的notifyCallback函数实现：
+'''
+void CameraService::Client::notifyCallback(int32_t msgType, int32_t ext1,int32_t ext2, void* user)
+{
+         …..
+        default:
+            sp<ICameraClient> c = client->mCameraClient;
+            if (c != NULL) {
+                c->notifyCallback(msgType, ext1, ext2);
+            }
+            break;
+         …..
+}
+'''
+         通过得到ICameraClient实例进而调用到了具体的对象Camera的notifyCallback()函数。这个地方估计会遇见跟ICameraService函数调用一样的问题，ICameraClient函数调用所需要的函数实例在哪？
+         记得上述ICameraService讲到的connect()函数嘛？其中有一个参数不能被忽略掉的，就是ICameraClient，但它在真正传入的时候却是一个ICameraClient子类camera的实例对象。
+'''
+CameraService:
+sp<ICamera> CameraService::connect(const sp<ICameraClient>& cameraClient)
+{
+    …..
+    // create a new Client object
+    client = new Client(this, cameraClient, callingPid);
+    …..
+}
+        
+Client:
+CameraService::Client::Client(const sp<CameraService>& cameraService,
+        const sp<ICameraClient>& cameraClient, pid_t clientPid)
+{
+    ….
+    mCameraService = cameraService;
+    mCameraClient = cameraClient;
+    ….
+}
+'''
+这样就清楚了，其实Client在调用设置callback的调用最终还是调用到了camera.cpp中的callback函数，进而将具体内容通过callback反馈给上层应用做出相应的处理。
+

@@ -1,0 +1,46 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-03-02T11:42:19+08:00
+
+====== rsync ======
+Created 星期五 02 三月 2012
+
+TAGS: rsync
+
+rsync - a fast, versatile, remote (and local) file-copying tool
+
+
+=== server: ===
+	* 配置/etc/rsyncd.conf
+	reference:
+		pid file = /var/run/rsyncd.pid
+		use chroot = yes
+		read only = yes
+
+		[test]
+			path = /tmp
+			comment = For Test
+			max connections = 0
+			read only = no
+			write only = no
+
+	* start daemon
+		rsync --daemon
+		or
+		/etc/init.d/rsyncd start
+
+=== client: ===
+	rsync [opt] ''rsync://ip_addr/test test''
+	option:
+		* -a archive mode
+		* -r recurse
+		* -d transfer directories without recursing
+		* -l 仅拷贝链接本身
+		* -L 拷贝链接指向的内容
+		* -p 保留权限
+
+=== see also: ===
+	rsync --help
+	man rsync
+	rsync --daemon --help
+	man rsyncd.conf

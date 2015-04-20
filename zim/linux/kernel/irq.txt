@@ -1,0 +1,36 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-02-26T10:04:03+08:00
+
+====== irq ======
+Created 星期三 26 二月 2014
+
+{{./IRQ.png}}
+
+== 体系层 ==
+1.提供irq_chip和handler,分别注册到对应irq_desc中的irq_chip和handle_irq;
+2.体系层处理硬件中断,负责找到对应中断号的irq_desc,调用其中的handle_irq.
+
+== 流控层 ==
+流控层主要提供中断数据流中使用到的方法
+1.提供各种中断类型的流程控制方法:
+    handle_simple_irq
+    handle_edge_irq
+    ...
+    handle_level_irq
+
+    这些方法根据各自的特性,先使用irq_desc:irq_chip中的方法设置硬件,
+    然后都要进入handle_irq_event方法中.
+
+2.handle_irq_event的控制逻辑
+    找到对应的irq_desc,
+    遍历其中的irqaction链表,
+    调用其中的handler方法,
+    如果handler方法返回IRQ_WAKE_THREAD,则唤醒irqaction的task_struct,
+    在thread中再调用irqaction中的thread_fn方法.
+
+== 驱动层 ==
+1.向驱动提供中断注册方法request_threaded_irq,
+    主要工作是分配一个irqaction,填充其中的handler和thread_fn,
+    找到对应的irq_desc,把irqaction添加到action链表中.
+2.封装irq_chip中的方法,向驱动提供enable_irq\disable_irq等方法

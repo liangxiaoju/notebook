@@ -1,0 +1,74 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-02-14T09:16:54+08:00
+
+====== imagemagick ======
+Created 星期二 14 二月 2012
+
+	**convert** 是一款 niubility 的非交互式的命令行图像编辑器。支持众多图像格式(//$ convert -list format//)。
+
+	''convert [input-options] input-file [output-options] output-file''
+	**convert** 对参数的顺序敏感，输出文件应该做为最后一个参数
+
+
+==== Usage ====
+**geometry**
+	scale% 	Height and width both scaled by specified percentage.
+	scale-x%xscale-y% 	Height and width individually scaled by specified percentages. (Only one % symbol needed.)
+	width 	Width given, height automagically selected to preserve aspect ratio.
+	xheight 	Height given, width automagically selected to preserve aspect ratio.
+	widthxheight 	Maximum values of height and width given, aspect ratio preserved.
+	widthxheight^ 	Minimum values of width and height given, aspect ratio preserved.
+	widthxheight! 	Width and height emphatically given, original aspect ratio ignored.
+	widthxheight> 	Change as per widthxheight but only if an image dimension exceeds a specified dimension.
+	widthxheight< 	Change dimensions only if both image dimensions exceed specified dimensions.
+	area@ 	Resize image to have specified area in pixels. Aspect ratio is preserved.
+
+
+===== Tips =====
+**支持的文件类型**
+	''$ convert -list format''
+	有些类型支持读写，有些类型只支持读。
+	IM 支持对 PDF 的读写。
+
+**转灰阶图片**
+	''$ convert origin.png -colorspace Gray -colors 8 origin_gray.png''
+		转为 8 灰阶图片。图片大小不变。
+	''$ convert origin.png -colorspace Gray -depth 8 origin_gray.png''
+		强制转换，色块产生。
+	''$ convert -size 1680x1050 -depth 16 screen.rgb -colorspage Gray -colors 16 -depth 4 gray:screen.gray''
+	转为 16 灰阶图片。 注意, 参数顺序也代表了动作的执行顺序, 所以 -colors 与 -depth 调换后产生的效果图是不一样的。
+
+**格式转换**
+	''$ convert startdict.png startdict.rgb''
+	将 png 转换成 raw rgb 格式。默认 depth 为 16 位， 即每个RGB通道为16位, 每个像素 6 字节表示。文件大小 size = Heigh * Weight * 6
+	''$ display -size 717x484 startdict.rgb''
+	显示raw 数据的时候需要指定图片大小, 如果色深发生了改变的话，需要再提供 -depth 参数
+	**Note:** 图片格式可通过后缀名判断，也可在文件名前加类型前缀pe
+	''$ convert startdict.png RGBA:picture''
+
+**修改大小**
+	''$ convert stardict.png -resize 800 startpng_1.png''
+		将图片调整为宽 800 像素的大小。按比例修改。
+	''$ convert stardict.png -resize 800x800\! startpng_1.png''
+		将图片调整为宽x高为 800x800 像素的大小。
+	''$ convert stardict.png -resize 50% startpng_1.png''
+		将图片调整为原来大小的一半。
+	''$ convert stardict.png -resize 50%x30 startpng_1.png''
+		将图片调整为原来大小的高50%， 宽30%。
+
+**文字转为图片**
+	''$ convert -background lightblue -fill blue -font Candice -pointsize 72 label:Anthony label.gif''
+	''$ convert -background lightblue -fill blue -font 方正书宋_GBK -pointsize 72 label:@gxsd-utf8.txt gxsd.gif''	//中文注释从文件导入
+
+**添加注释**
+	''$ convert rbtree_1.png -background khaki label:'created by tikz' -append rbtree_4.png''
+
+
+**切除图像白边**
+	''$ convert merz.png -trim merz1.png''
+
+
+=== See also ===
+	* [[http://www.imagemagick.org/Usage/|Examples of ImageMagick Usage]]
+	* http://musictrip.5d6d.com/thread-1174-1-1.html

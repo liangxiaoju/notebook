@@ -1,0 +1,35 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-02-26T14:55:38+08:00
+
+====== 004 ======
+Created 星期日 26 二月 2012
+
+TAGS: python
+python: class
+
+类定义：
+class Person:
+	pass
+
+创建对象：
+p = Person()
+
+类方法：
+class Person:
+	def sayHi(self):
+		pass
+所有的类方法都要带一个self变量，指向对象本身
+
+使用对象方法:
+p = Person()
+p.sayHi()
+
+两个特殊的函数：
+''__init__(self[, other])''
+	在创建新实例时被调用
+''__del__(self)''
+	在对象消逝时被调用，可以使用del语句指明它的运行
+
+当子类重载了基类的方法，包括''__init__''方法，在使用时，python总是首先查找对应类型
+的方法，如果不能在子类中找到对应的方法，它才开始到基类中逐个查找。

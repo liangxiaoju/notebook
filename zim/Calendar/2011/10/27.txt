@@ -1,0 +1,23 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-10-27T14:58:46+00:00
+
+====== 星期四 27 10月 2011 ======
+
+G63M软件（兼容新旧GIGA芯片）旧芯片升级完成后不开机
+
+G63MHD 10月21号发部的软件版本在升旧的GIGA芯片时，显示升级完成，并且升级过
+程中没有出现错误，进度100%，出现The end 界面，此时灯一直常亮，进不去系统。
+
+另外拿这些机器用之前的软件升级后可正常进系统。
+
+
+resolve:
+初始化时，将PWR_C_EPD3V3和PWR_C_EPD1V8设成输出高没有上下拉，然后EPD初始化时
+也将它们设成输出低没有上下拉，会出现H_RDY time out !!!
+
+发现只要是在开机时把PWR_C_EPD3V3和PWR_C_EPD1V8先输出低、再输出高、输出低，
+都会出现time out。
+
+解决办法是：cpu开机默认gpio输入下拉，mach初始化时PWR_C_EPD3V3和PWR_C_EPD1V8
+输出低，EPD驱动初始化时也输出低。

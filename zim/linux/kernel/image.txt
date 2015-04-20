@@ -1,0 +1,27 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-02-29T15:14:59+08:00
+
+====== image ======
+Created 星期三 29 二月 2012
+TAGS: image
+
+以 versatile linux-3.2.5 为例
+* 生成子模块的built-in.o
+	生成可重定位，小端的二进制代码
+	''arm-linux-ld -EL    -r -o sound/built-in.o sound/soundcore.o sound/core/built-in.o sound/i2c/built-in.o sound/drivers/built-in.o sound/isa/built-in.o sound/pci/built-in.o sound/ppc/built-in.o sound/arm/built-in.o sound/sh/built-in.o sound/synth/built-in.o sound/usb/built-in.o sound/firewire/built-in.o sound/sparc/built-in.o sound/spi/built-in.o sound/parisc/built-in.o sound/pcmcia/built-in.o sound/mips/built-in.o sound/soc/built-in.o sound/atmel/built-in.o sound/ac97_bus.o sound/last.o''
+
+* 生成vmlinux
+	''arm-linux-ld -EL  -p --no-undefined -X --build-id -o vmlinux -T arch/arm/kernel/vmlinux.lds arch/arm/kernel/head.o arch/arm/kernel/init_task.o  init/built-in.o --start-group  usr/built-in.o  arch/arm/nwfpe/built-in.o  arch/arm/vfp/built-in.o  arch/arm/kernel/built-in.o  arch/arm/mm/built-in.o  arch/arm/common/built-in.o  arch/arm/mach-versatile/built-in.o  arch/arm/plat-versatile/built-in.o  kernel/built-in.o  mm/built-in.o  fs/built-in.o  ipc/built-in.o  security/built-in.o  crypto/built-in.o  block/built-in.o  arch/arm/lib/lib.a  lib/lib.a  arch/arm/lib/built-in.o  lib/built-in.o  drivers/built-in.o  sound/built-in.o  firmware/built-in.o  net/built-in.o --end-group .tmp_kallsyms2.o''
+
+* 生成Image
+	''arm-linux-objcopy -O binary -R .comment -S  vmlinux arch/arm/boot/Image''
+
+* 生成zImage
+	''cat arch/arm/boot/compressed/../Image | gzip -n -f -9 > arch/arm/boot/compressed/piggy.gzip''
+	''arm-linux-ld -EL    --defsym _kernel_bss_size=4382016 --defsym zreladdr=0x00008000 -p --no-undefined -X -T arch/arm/boot/compressed/vmlinux.lds arch/arm/boot/compressed/head.o arch/arm/boot/compressed/piggy.gzip.o arch/arm/boot/compressed/misc.o arch/arm/boot/compressed/decompress.o arch/arm/boot/compressed/string.o arch/arm/boot/compressed/lib1funcs.o -o arch/arm/boot/compressed/vmlinux ''
+	''arm-linux-objcopy -O binary -R .comment -S  arch/arm/boot/compressed/vmlinux arch/arm/boot/zImage''
+
+镜像生成流程：
+{{./kernel_images.png}}
+

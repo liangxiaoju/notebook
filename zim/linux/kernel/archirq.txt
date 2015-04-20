@@ -1,0 +1,60 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-03-08T09:56:55+08:00
+
+====== archirq ======
+Created 星期四 08 三月 2012
+
+TAGS: irq
+
+中断向量表在：
+arch/arm/kernel/entry-armv.S
+
+	.globl	__vectors_start
+__vectors_start:
+ ARM(	swi	SYS_ERROR0	)
+ THUMB(	svc	#0		)
+ THUMB(	nop			)
+	W(b)	vector_und + stubs_offset
+	W(ldr)	pc, .LCvswi + stubs_offset
+	W(b)	vector_pabt + stubs_offset
+	W(b)	vector_dabt + stubs_offset
+	W(b)	vector_addrexcptn + stubs_offset
+	W(b)	vector_irq + stubs_offset	@普通中断从这里跳转
+	W(b)	vector_fiq + stubs_offset
+
+	.globl	__vectors_end
+__vectors_end:
+
+然后通过宏irq_handler查找到irq号并传给asm_do_IRQ
+	.macro	irq_handler
+	get_irqnr_preamble r5, lr
+1:	get_irqnr_and_base r0, r6, r5, lr
+	movne	r1, sp
+	@
+	@ routine called with r0 = irq number, r1 = struct pt_regs *
+	@
+	adrne	lr, BSYM(1b)
+	bne	asm_do_IRQ
+
+再通过irq_to_desc(irq)找到irq对应的irq_desc,执行irq_desc:handle_irq,
+irq_desc:handle_irq则是在平台相关代码中注册的,而handle_irq会遍历
+irq_desc:action并调用action:handler。
+
+machine通过set_irq_chip，set_irq_handler，set_irq_flags等函数将irq
+加入到系统中，也即为每个irq建立对应的irq_desc结构。
+
+驱动中通过request_irq把自己的中断处理函数注册到irq对应的action:handler。
+
+一般处理过程：
+irq --> irq_desc:handle_irq --> irq_desc:action:handler
+
+
+如果cpu里有多个中断对应一个中断号的情况，通用的做法是：
+为每个中断申请一个虚拟的中断号并设置好每个中断号对应的handle_irq函数，
+然后需要通过set_irq_chained_handler函数为这个共用的中断号注册一个自己的handle_irq，
+然后在自己的handle_irq函数中把中断分发出去，即调用虚拟中断号对应的handle_irq。
+
+共用中断处理流程：
+irq --> irq_desc:handle_irq(共用的中断号) -->
+irq_desc:handle_irq（虚拟的中断号） --> irq_desc:action:handler

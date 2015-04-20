@@ -1,0 +1,22 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-09-17T10:47:06+08:00
+
+====== codec-driver ======
+Created 星期一 17 九月 2012
+
+tags: alsa, codec
+
+1. 实现一个 codec DAI:
+   snd_soc_codec_dai()
+   snd_soc_register_dai()
+   需要定义capture和playback两个流.
+
+2. 实现 codec DAI 中的 snd_soc_dai_ops.
+
+3. 实现一个 snd_soc_codec_device 以供板级文件注册.
+   在probe中主要注册 pcm, snd_kcontrol_new, snd_soc_dapm_widget
+   和 snd_soc_dapm_route.
+
+codec driver -| codec DAI : snd_soc_codec_dai
+              | codec driver : snd_soc_codec_device

@@ -1,0 +1,48 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-01-11T17:32:21+08:00
+
+====== android ======
+Created 星期三 11 一月 2012
+
+1.Android＋alsa音频体系大体结构：
+
+    从alsa的角度由下往上看：linux中有alsa驱动层，其中，/sound/core/pcm_native.c文件中的snd_pcm_f_ops是alsa驱动层对alsa_lib层的接口；Android中有alsa_lib层（在donut/external/alsa_lib目录下）和alsa应用层；
+
+    从Android的角度由下往上看：首先是cpp库层，然后是框架层，最后是java应用层。库层分3个部分：首先是硬件接口层AudioHardwareInterface，其派生类负责调用alsa_lib接口，形成read、write等虚函数；其次是音频环层AudioFlinger,利用多态的性质调用硬件接口层AudioHardwareInterface派生类的read、write等虚函数并最终管理read和write两个线程。最后，是媒体录音MediaRecorder和媒体播放层MediaPlayer。进入或激活read/write线程，实现录音放音功能。
+
+ 
+
+2.Android中音频配置文件问题：
+
+    配置文件/system/etc/asound.conf其实是alsa体系留的一手。alsa体系提供了这样一种机制：应用层直接改变音频codec的
+
+寄存器，具体而言：linux驱动中创建snd_kcontrol_new控制结构，并关联到codec寄存器，asound.conf文件通过控制结构名字，
+
+就能关联到寄存器，从而改变寄存器的值。asound.conf文件主要用来做Android音频的路由控制：不同路由可以设置多个寄存器
+
+的不同配置组合，形成不同的音频通道，从而当路由改变时，底层codec通道随之改变。
+
+ 
+
+3.Android中音频采样频率、通道数问题：
+
+    Android向下强制设定：播放时，双声道(立体声)，采样频率为44.1kHz,当SD卡中音频文件是单声道或者频率不是44.1kHz时，Android会自动处理，使得送给驱动的数据流是双声道44.1kHz。录音时，单声道，采样频率固定为8kHz，因为手机上生成的一般是amr或者3gpp压缩格式，文件要尽量小，便于彩信等应用的传输。对做音频驱动的同志来说就很好了，只需要悉心配置好两种频率。
+
+ 
+
+4.音频无声：
+
+    通用codec芯片wm9714、alc5620之类的都有回环模式loopback，可以先用loopback模式把mic的录音送到spk，有声音说明
+
+芯片大部分逻辑很正常；接着，应该调通控制接口，能读写codec寄存器；最后再调试I2S、ac97等数字接口。
+
+在dma中断中添加打印可以让数据流一目了然。
+
+ 
+
+5.音频效果不好：
+
+    通常是频率问题，记住DAC、ADC的频率必须设置好，他们一般由codec芯片中PLL分频产生。有些芯片要求把ADC、DAC
+
+等模块上电后，才能设置其频率，否则无效，但是能写入，这是极容易忽视的一个问题。削顶失真，调小音量可以解决。

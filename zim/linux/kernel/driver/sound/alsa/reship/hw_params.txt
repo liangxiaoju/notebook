@@ -1,0 +1,31 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-01-11T17:30:53+08:00
+
+====== hw params ======
+Created 星期三 11 一月 2012
+
+linux/sound目录下ALSA体系SOC子系统中hw_params逻辑
+
+链接分析：
+
+    core/pcm_native.c文件中snd_pcm_hw_params()函数调用err = substream->ops->hw_params(substream, params)。根据soc/soc-core.c文件中snd_pcm_set_ops(pcm, SNDRV_PCM_STREAM_PLAYBACK, &soc_pcm_ops)和soc_pcm_ops定义中.hw_params = soc_pcm_hw_params提供的关联，可知soc/soc-core.c文件中soc_pcm_hw_params()函数被调用。此函数依次调用4个分支。
+
+    (1).ret = machine->ops->hw_params(substream, params);根据soc/soc-core.c文件中soc_new_pcm()函数中rtd->dai = dai_link;和/soc/pxa/littleton.c文件中snd_soc_machine_littleton定义.dai_link = littleton_dai的关联，以及littleton_dai和littleton_machine_ops的定义可知，没有关联项，此函数为空。
+
+    (2).ret = codec_dai->ops.hw_params(substream, params);根据soc/pxa/littleton.c文件中.codec_dai = &wm9713_dai[WM9713_DAI_AC97_HIFI],和wm9713_dai定义中提供的关联，可知，没有关联。
+
+    (3).ret = cpu_dai->ops.hw_params(substream, params);根据soc/pxa/littleton.c文件中.cpu_dai = &pxa_ac97_dai[PXA3XX_DAI_AC97_HIFI],和pxa_ac97_dai定义，可知/soc/pxa/pxa3xx-ac97.c文件中pxa3xx_ac97_hw_params()函数将被调用。待续1 。
+
+    (4).ret = platform->pcm_ops->hw_params(substream, params);根据pxa3xx_soc_platform和pxa3xx_pcm_ops定义，可知，/soc/pxa/pxa3xx-pcm.c文件中pxa3xx_pcm_hw_params()被调用。待续2 。
+
+ 
+
+执行分析：
+
+    待续1中保存dma信息cpu_dai->dma_data = &pxa3xx_ac97_pcm_stereo_out;待续2中将其关联到dma指针*dma = rtd->dai->cpu_dai->dma_data;并进一步存储到prtd->params中prtd->params = dma;最后，根据这些信息，在预先申请的内存中按照pxa_dma_desc结构组织一张链表。dma能根据链表自动传输数据，所以，由待续1提供dma设置，再由待续2根据设置组织链表，就完成了dma的所有配置。这也是hw_params的核心功能。ALSA用户层中播放、停止等操作只需要简单的触发dma启动、停止就行了。
+
+
+后记：
+
+    下次根据dma分析录音/放音数据流。

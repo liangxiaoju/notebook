@@ -1,0 +1,10 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-08-02T15:51:51+08:00
+
+====== FAQ ======
+Created 星期四 02 八月 2012
+
+Can't locate Switch.pm in @INC (@INC contains: external/webkit/WebCore/bindings/scripts /etc/perl /usr/local/lib64/perl5/5.16.0/x86_64-linux /usr/local/lib64/perl5/5.16.0 /usr/lib64/perl5/vendor_perl/5.16.0/x86_64-linux /usr/lib64/perl5/vendor_perl/5.16.0 /usr/lib64/perl5/5.16.0/x86_64-linux /usr/lib64/perl5/5.16.0 .) at external/webkit/WebCore/dom/make_names.pl line 38.
+
+install perl-Switch

@@ -1,0 +1,292 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-03-14T23:40:54+08:00
+
+====== usb-subsystem ======
+Created 星期三 14 三月 2012
+
+0. 预备理论
+
+1. USB Core
+
+2. USB Hub
+
+3. USB OTG
+
+4. USB Host
+
+5. USB Gadget
+
+6. USB Mass Storage
+
+USB博大精深，不是一两篇博文能够解释清楚的。想要深入研究USB的话，USB协议(外加Host和OTG协议)是必要的知识，另外，国内有本fudan_abc的<<USB那些事>>也写的很好很详细，唯一美中不足的就是写得太详细了反而感觉思路架构不是很清晰了，本人学识还浅，想简单地把USB在Linux里的结构框架大致整理下，其中重点解析下USB Core和Hub。
+
+0. 预备理论
+
+说实话，读USB2.0协议还是蛮痛苦的，它仅仅是一个协议，一个在USB世界里制定的游戏规则，就像法律条文一样，它并不是为了学习者而写的，可读性很差。这里总结以下几个重点基本点。
+
+0.1 拓扑结构 (ch4.1.1)
+
+ {{./0_1308647281iMq3.gif.jpe}}
+
+ 
+
+* 之所以要规定这个树形拓扑结构是为了避免环形连接。
+* 一条USB总线有且只有一个USB Host，对应一个RootHub
+* USB设备分为两类，Hub和Functions，Hub通过端口Port连接更多USB设备，Functions即USB外接从设备。
+* 层次最多7层，且第7层不能有Hub，只能有functions。
+* Compound Device - 一个Hub上接多个设备组成一个小设备。
+* Composite Device - 一个USB外接设备具有多个复用功能。
+
+0.2 机械性能 (ch5)
+{{./0_13087332577767.gif.jpe}}
+* 连接件connector，就是设备上的那个连接口。
+* 插头plug，就是USB电缆线两头的插口。
+* Mini-AB, Micro-AB指的是支持A和B两类插头的连接件。
+
+0.3 电气性能 (ch6)
+{{./0_1308648116PvvZ.gif.jpe}}
+* VBUS  -  +5V电源供电。
+* D+ D- -  用于数据传输的电缆线。
+* 低速 low-speed  10-100Kb/s      应用于鼠标和键盘等
+* 全速 full-speed   500Kb-10Mb/s 应用于音频和麦克等
+* 高速 high-speed 25-400Mb/s     应用于存储和视频等  (USB3.0比之块10倍)
+
+ 0.4 四大描述符 (ch9.5)
+
+  协议规定了USB的四个描述符descriptor - 设备device，配置configure，接口interface，端点endpoint。
+
+  终端下输入命令  # ls /sys/bus/usb/devices
+
+    usb1
+    1-0:1.0
+    usb2
+    2-0:1.0   // USB总线(RootHub) No.2，USB port端口号No.0，配置号No.1，接口号No.0。
+
+* 区别port和endpoint，port之于hub，endpoint是每个USB设备用于数据传输所必需的端点。
+* 设备device>配置configure>接口interface>设置setting>端点endpoint。
+* 设备可以有多个配置，配置可以有一个或多个接口，接口可以有一个或多个设置。
+* 一个接口对应一个驱动，接口是端点的集合。
+
+  0.5 启动流程 (ch9.1,9.2)
+
+ {{./0_130873995001sD.gif.jpe}}
+
+* attached->powered->default->address->configured
+* 启动流程与其他设备比如SD卡相比，最大的不同在于Hub，主机Host通过Hub状态的变化判断USB外接设备的有无。
+* USB外接设备插入和拔出整个实现过程称为总线枚举Bus Enumeration。
+
+   0.6 数据流传输 (ch5)
+{{./0_1308741511KBIb.gif.jpe}}
+* endpoint分零端点和非零端点，零端点作为默认的控制方法用于初始化和操控USB逻辑设备。
+* 数据流传输分 control/bulk/interrupt/isochronous data transfer。
+
+ 0.7 数据包 (ch8)
+
+* 数据包分Token, Data, Handshake, Special，四种包有自己的数据组织方式。
+* Token令牌包只能由主机传送给设备，分IN, OUT, SOF和SETUP。
+* SETUP包实现主机向设备发出的请求request，也要满足特定的格式。(ch9.3,9.4)
+
+__1. USB Core__
+
+   先啰嗦几句，回答一个困扰我很久的问题，读Linux源码究竟要读到什么程度？这是个永恒的话题，每个同道中人都有自己的看法。以笔者之见，如何阅读源码主要取决于自己的职业定位，是研发还是开发，是为Linux社区作贡献还是用已有的方案开发？我想大多数驱动工程师属于后者，那么，面对已经很完善的核心层源码，还有必要看吗，或者有必要去深入研究吗？我认为既然我们已经站在了巨人的肩膀上，至少要知道这宽阔的肩膀是如何炼成的，它所存在的价值以及如何去使用它。
+
+  既然如此，那USB核心层到底是什么，它都默默地做了些什么，我们要如何使用它？这里主要有两个重点，USB总线和urb。
+
+__1.1 USB子系统结构__
+{{./0_1308815501Assc.gif.jpe}}
+协议里说，HCD提供主控制器驱动的硬件抽象，它只对USB Core一个负责，USB Core将用户的请求映射到相关的HCD，用户不能直接访问HCD。换句话说，USB Core就是HCD与USB设备唯一的桥梁。
+
+__1.2 USB子系统的初始化__
+
+USB core源码位于./drivers/usb/core，其中的Makefile摘要如下，
+{{./0_1308816217w6M3.gif.jpe}}
+usbcore这个模块代表的不是某一个设备，而是所有USB设备赖以生存的模块，它就是USB子系统。
+
+./drivers/usb/core/usb.c里实现了初始化，伪代码如下，
+{{./0_1308816522Lu1g.gif.jpe}}
+usbcore注册了USB总线，USB文件系统，USB Hub以及USB的设备驱动usb generic driver等。
+
+__1.3 USB总线__
+
+  注册USB总线通过bus_register(&usb_bus_type);
+
+struct bus_type usb_bus_type = {
+ .name =  "usb",
+ .match = ** usb_device_match **,   // 这是个很重要的函数，用来匹配USB设备和驱动。
+ .uevent = usb_uevent,
+ .pm =  &usb_bus_pm_ops,
+};
+下面总结下USB设备和驱动匹配的全过程，
+
+-> step 1 - usb device driver
+{{./0_1308820194Cqcq.gif.jpe}}
+USB子系统初始化的时候就会注册usb_generic_driver, 它的结构体类型是usb_device_driver，它是USB世界里唯一的一个USB设备驱动，区别于struct usb_driver USB驱动。
+
+* USB设备驱动(usb device driver)就只有一个，即usb_generice_driver这个对象，所有USB设备都要绑定到usb_generic_driver上，它的使命可以概括为：为USB设备选择一个合适的配置，让设备进入configured状态。
+* USB驱动(usb driver)就是USB设备的接口驱动程序，比如adb驱动程序，u盘驱动程序，鼠标驱动程序等等。
+
+-> step 2 - usb driver
+
+ {{./0_1308820685R3u2.gif.jpe}}
+
+ Linux启动时注册USB驱动，在xxx_init()里通过usb_register()将USB驱动提交个设备模型，添加到USB总线的驱动链表里。
+
+ -> step 3 - usb device
+{{./0_1308821185e14g.gif.jpe}}
+USB设备连接在Hub上，Hub检测到有设备连接进来，为设备分配一个struct usb_device结构体对象，并将设备添加到USB总线的设备列表里。
+
+  -> step 4 - usb interface
+
+ {{./0_1308821651wxDw.gif.jpe}}
+
+ USB设备各个配置的详细信息在USB core里的漫漫旅途中已经被获取并存放在相关的几个成员里。
+
+__ usb_generic_driver得到了USB设备的详细信息，然后把准备好的接口送给设备模型，Linux设备模型将接口添加到设备链表里，然后去轮询USB总线另外一条驱动链表，针对每个找到的驱动去调用USB总线的match函数，完成匹配。__
+
+ __1.4 USB Request Block (urb)__
+
+ USB主机与设备间的通信以数据包(packet)的形式传递，Linux的思想就是把这些遵循协议的数据都封装成数据块(block)作统一调度，USB的数据块就是urb，结构体struct urb，定义在<linux/usb.h>，其中的成员unsigned char *setup_packet指针指向SETUP数据包。下面总结下使用urb完成一次完整的USB通信需要经历的过程，
+
+-> step 1 - usb_alloc_urb()
+
+创建urb，并指定USB设备的目的端点。
+
+-> step 2 - usb_control_msg()
+
+将urb提交给USB core, USB core将它交给HCD主机控制器驱动。
+
+-> step 3 - usb_parse_configuration()
+
+HCD解析urb,拿到数据与USB设备通信。
+
+-> step 4
+
+HCD把urb的所有权交还给驱动程序。
+
+协议层里最重要的函数就是usb_control/bulk/interrupt_msg()，这里就简单地理一条线索，
+
+usb_control_msg() => usb_internal_control_msg() => usb_start_wait_urb() => usb_submit_urb() => usb_hcd_submit_urb => hcd->driver->urb_enqueue() HCD主控制器驱动根据具体平台实现USB数据通信。
+
+ __2. USB Hub__
+
+ Hub集线器用来连接更多USB设备，硬件上实现了USB设备的总线枚举过程，软件上实现了USB设备与接口在USB总线上的匹配。
+
+ 下面总结下USB Hub在Linux USB核心层里的实现机制，
+
+ USB子系统初始化时，usb_hub_init()开启一个名为"khubd"的内核线程，
+{{./0_1308902148I886.gif.jpe}}
+内核线程khubd从Linux启动后就自始至终为USB Hub服务，没有Hub事件时khubd进入睡眠，有USB Hub事件触发时将会经由hud_irq() => hub_activate() => kick_khubd() 最终唤醒khubd，将事件加入hub_event_list列表，并执行hub_events()。hub_events()会不停地轮询hub_events_list列表去完成hub触发的事件，直到这个列表为空时退出结束，回到wait_event_xxx继续等待。
+
+处理hub事件的全过程大致可分为两步，
+
+    * 第一步 判断端口状态的变化
+
+通过hub_port_status()得到hub端口的状态。
+
+源码里类似像hub_port_status(), hub_hub_status()等功能函数，都调用了核心层的usb_control_msg()去实现主控制器与USB设备间的通信。
+
+    * 第二步 处理端口的变化
+
+hub_port_connect_change()是核心函数，以端口发现有新的USB设备插入为例，USB Hub为USB设备做了以下几步重要的工作，注意这里所谓的USB设备是指插入USB Hub的外接USB设备(包括Hub和Functions)，接下来Hub都在为USB设备服务。
+
+1) usb_alloc_dev() 为USB设备申请一个sturct usb_device结构。
+
+2) usb_set_device_state() 设置USB设备状态为上电状态。(硬件上设备已进入powered状态)。
+
+3) choose_address() 为USB设备选择一个地址，利用一个轮询算法为设备从0-127里选择一个地址号。
+
+4) hub_port_init() 端口初始化，实质就是获取设备描述符device descriptor。
+
+5) usb_get_status() 这个有点特殊，它是专门给Hub又外接Hub而准备的。
+
+6) __usb_new_device() 这时USB设备已经进入了Configured状态，调用device_add()在USB总线上寻找驱动，若匹配成功，则加载对应的驱动程序。__
+
+ 
+
+__3. USB OTG__
+
+  引入OTG的概念是为了让设备可以充当主从两个角色，主设备即HCD，从设备即UDC，也就是Gadget。这里就简单梳理下协议和源码。
+
+3.1 协议
+
+1) Protocol
+
+ OTG的传输协议有三类 - ADP,SRP,HNP。
+
+    * ADP(Attach Detection Protocol) 当USB总线上没有供电时，ADP允许OTG设备或USB设备决定连接状态。
+    * SRP(Session Request Protocol) 允许从设备也可以控制主设备。
+    * HNP(Host Negotiation Protocol) 允许两个设备互换主从角色。 
+
+2) Device role
+
+  协议定义两种角色，OTG A-device和OTG B-device，A-device为电源提供者，B-device为电源消费者，默认配置下，A-device作为主设备，B-device作为从设备，之后可以通过HNP互换。
+
+3) OTG micro plug
+
+  协议上说"An OTG product must have a single Micro-AB receptacle and no other USB receptacles."这句话有点问题。。。应该还包括mini-AB receptacle，以下所有micro都可以是mini。
+
+  OTG电缆一端为micro-A plug，另一端为micro-B plug。
+
+  OTG加了第5个pin脚，名为ID-pin，micro-A plug的ID-pin接地，micro-B plug的ID-pin悬空。
+
+  OTG设备被接上micro-A plug后被称为micro-A device，被接上micro-B plug后被称为micro-B device。
+
+3.2 源码浅析
+
+  OTG控制器集成在CPU内，Linux下的源码驱动由各家开发平台提供，位于./drivers/usb/otg/下。
+
+  以Freescale平台为例，主要的思路就是，当有OTG线插入OTG设备时产生中断，中断处理函数上半部通过读取OTG控制器寄存器相应值判断OTG设备属于Host(HCD)还是Gadget(UDC)，下半部通过工作队列由回调函数类似host->resume()或gadget->resume()重启Host或Gadget控制器，resume()具体的实现过程在HCD或UDC相关驱动里实现。
+
+ 
+
+__4. USB Host__
+
+  USB主控制器(HCD)同样集成在CPU内，由开发平台厂商提供驱动，源码位于./drivers/usb/host/下。
+
+  主控制器主要有四类：EHCI, FHCI, OHCI, UHCI, 它们各自的寄存器接口协议不同，嵌入式设备多为EHCI。
+
+  该驱动的结构体类型为struct hc_driver，其中的成员(*urb_enqueue)最为重要，它是主控制器HCD将数据包urb传向USB设备的核心实现函数，之前已经提到，协议层里最主要的函数usb_control_msg()最终就会回调主控制器的(*urb_enqueue)。
+
+usb_control_msg() => usb_internal_control_msg() => usb_start_wait_urb() => usb_submit_urb() => usb_hcd_submit_urb => hcd->driver->urb_enqueue()
+
+ 
+
+__5. USB Gadget__
+
+  当年写过一篇Gadget...http://blog.csdn.net/qianjin0703/archive/2011/01/15/6141763.aspx
+
+  Gadget源码位于./drivers/usb/gadget/下，涉及的驱动程序和数据结构相对较多。
+
+  驱动主要有，
+
+    * 平台相关的Gadget控制器驱动
+    * 平台无关的复用设备驱动composite.c
+    * android平台的复用设备驱动android.c
+    * adb驱动f_adb.c，U盘驱动f_mass_storage.c等一些复用的USB驱动
+
+  数据结构主要有，
+
+* struct usb_gadget 里面主要有(*ops)和struct usb_ep *ep0。
+* struct usb_gadget_driver 其中的(*bind)绑定复用设备驱动，(*setup)完成USB枚举操作。
+* struct usb_compostie_driver 其中的(*bind)绑定比如android复用设备驱动。
+* struct usb_request USB数据请求包，类似urb。
+* struct usb_configuration 就是这个gadget设备具有的配置，其中的struct usb_function *interface[]数组记录着它所拥有的USB接口/功能/驱动。
+* struct usb_function 其中的(*bind)绑定相关的USB接口，(*setup)完成USB枚举操作。
+
+  整体框架可概括为，(mv_gadget为gadget控制器的数据)
+
+ {{./0_1309432737y686.gif.jpe}}
+
+__6. USB Mass Storage__
+
+  全世界只有一个Linux U盘驱动，位于./drivers/usb/storage/usb.c，伪代码如下，这里需要注意的是，在进行U盘驱动的初始化probe之前，USB core和hub已经对这个U盘做了两大工作，即
+
+1) 完成了USB设备的枚举，此时U盘已经进入configured状态，U盘数据存放在struct usb_interface。
+
+2) 完成了USB总线上设备和驱动的匹配，这时总线上已经找到了接口对应的驱动即U盘驱动。
+{{./0_13094335265e0A.gif.jpe}}
+* 土黄色部分由SCSI子系统封装实现最终的U盘驱动注册。
+* usb_stor_scan_thread 扫描U盘的线程，等待5秒，如果5秒内不拔出就由SCSI进行全盘扫描，
+* usb_stor_contro_thread 一个核心的线程，具体参看《USB那些事》...
+{{./0_1309434658ETH0.gif.jpe}}

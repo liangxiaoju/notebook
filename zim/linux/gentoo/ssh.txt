@@ -1,0 +1,35 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-11-25T16:35:20+08:00
+
+====== ssh ======
+Created 星期五 25 十一月 2011
+
+生成密钥：
+ssh-keygen -t rsa
+
+把公钥放到服务器上
+
+客户端登录
+
+
+过程：
+B用公钥加密一个随机数发给A，
+A用私钥解密得到随机数，再发回给B，如果匹配，则认为认证通过。
+
+
+== multi ssh key ==
+add
+'''
+Host git.byd.com
+    HostName 115.29.146.118
+    User git
+    Port 22
+    IdentityFile ~/.ssh/id_byd
+'''
+in file '~/.ssh/config'
+
+then, you can
+'''
+git clone git@git.byd.com:xxx/yyy
+'''

@@ -1,0 +1,37 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-02-14T12:41:27+08:00
+
+====== ota ======
+Created 星期五 14 二月 2014
+
+== incremental OTAs ==
+
+/android.dir: android source top directory
+/backup.dir: zip backup directory
+/incremental.dir: incremental OTAs directory
+
+* build
+    ''cd /android.dir''
+    ''source build/envsetup.sh''
+    ''lunch rk30sdk-eng''
+    ''make && make otapackage''
+
+* backup
+    ''cp out/target/product/rk30sdk/obj/PACKAGING/target_files_intermediates/rk30sdk-target_files-eng.xxx.zip /backup.dir/rk30sdk-target_files-eng-A.zip''
+
+* make some changes in your android source dir
+    eg.
+        ''rm device/rockchip/rk30sdk/apk/RkVideoPlayer.apk''
+
+* build again
+    ''make && make otapackage''
+
+* backup
+    ''cp out/target/product/rk30sdk/obj/PACKAGING/target_files_intermediates/rk30sdk-target_files-eng.xxx.zip /xxx.dir/rk30sdk-target_files-eng-B.zip''
+
+* generate incremental ota
+    ''./build/tools/releasetools/ota_from_target_files -v -i /backup.dir/rk30sdk-target_files-eng-A.zip /backup.dir/rk30sdk-target_files-eng-B.zip /incremental.dir/rk30sdk-ota-eng.zip''
+
+
+"/incremental.dir/rk30sdk-ota-eng.zip" = "/backup.dir/rk30sdk-target_files-eng-B.zip" - "/backup.dir/rk30sdk-target_files-eng-A.zip"

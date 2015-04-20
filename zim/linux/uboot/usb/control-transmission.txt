@@ -1,0 +1,65 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-05T14:49:46+08:00
+
+====== control-transmission ======
+Created 星期四 05 四月 2012
+
+tags: usb
+
+=== 控制传输： ===
+eg：获取设备描述符
+	** 设置事务: **
+	eg：发送get_descriptor标准请求
+		* 令牌信息包：{sync} {setup} {addr endp} {crc5} {eop}
+		* 数据信息包：{sync} {data0} {data} {crc16} {eop}
+		* 握手信息包：{sync} {ack/nack/stall} {eop}
+	** 数据传输事务： **
+	eg：读取descriptor
+		* 令牌信息包：{sync} {**in/out**} {addr endp} {crc5} {eop}
+		* 数据信息包：{sync} {data1} {data} {crc16} {eop}
+		* 握手信息包：{sync} {ack/nack/stall} {eop}
+	** 状态事务： **
+	eg：host返回0长度数据信息包
+		* 令牌信息包：{sync} {**out/in**} {addr endp} {crc5} {eop}
+		* 数据信息包：{sync} {data1} {eop}
+		* 握手信息包：{sync} {ack/nack/stall} {eop}
+
+=== 信息包： ===
+	* 令牌(token)信息包：{sync} {pid} {addr endp} {crc5} {eop}
+	* 数据(data)信息包: {sync} {pid} {data} {crc16} {eop}
+	* 握手(handshake)信息包: {sync} {pid} {eop}
+
+=== sync字段： ===
+	00000001
+
+
+=== pid字段： ===
+	* out:      0001(token)
+	* in:       1001
+	* sof:      0101
+	* setup:    1101
+
+	* data0:    0011(data)
+	* data1:    1011
+
+	* ack:      0010(handshake)
+	* nak:      1010
+	* stall:    1110
+
+	* pre:      1100(spec)
+
+=== 数据字段： ===
+	* {addr endp}
+	* {帧序列号}
+	* {data}
+
+=== crc字段： ===
+	* 对数据字段进行crc校验
+
+=== eop字段： ===
+	* 标记包的结束
+
+
+USB枚举图片
+{{./12461657_132393747588P0.gif}}{{./12461657_1323937485B1ET.gif}}{{./12461657_1323937496NYQ3.gif}}{{./12461657_1323937507V8k4.gif}}{{./12461657_13239375237NXx.gif}}{{./12461657_13239375365MB9.gif}}{{./12461657_1323937553meXF.gif}}{{./12461657_1323937564w5sV.gif}}

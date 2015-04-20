@@ -1,0 +1,49 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-02-26T15:47:58+08:00
+
+====== 005 ======
+Created 星期日 26 二月 2012
+
+TAGS: python
+python: file
+
+打开文件:
+	f=file(path[, mode[, buffering]])
+	mode = 'r','w','a','U','b' or add '+'
+	add a 'b' to the mode for binary files
+
+关闭文件:
+	f.close()
+
+获取文件描述符：
+	f.fileno()
+
+flush:
+	f.flush()
+
+读取：
+	f.next() --> string
+		the next value
+
+	f.read([size]) --> string
+		read at most size bytes
+
+	f.readline([size]) --> string
+		return an empty string at EOF
+
+	f.readlines([size]) --> list
+
+写入：
+	f.write(str)
+		write string to file
+
+	f.writelines(sequence_of_strings)
+
+	f.xreadlines() --> file
+	return self
+
+	f.seek(offset[, whence])
+
+	f.tell()
+		current file position

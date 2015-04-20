@@ -1,0 +1,58 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-12-17T09:22:33+08:00
+
+====== xrandr ======
+Created 星期一 17 十二月 2012
+
+TAGS: xrandr, dual-screen
+
+用于设置屏幕分辨率,旋转,刷新率等参数
+
+display: 每个X实例都唯一对应着一个dispaly
+screen: X实例中的虚拟屏幕,对应着一个或多个物理屏幕
+output: 每一个output对应着一个显卡输出口
+
+
+== usage ==
+xrandr
+	-dispaly :0
+		指定当前操作的X实例
+	--screen snum
+		指定虚拟屏幕
+	--output "VGA-0"
+		指定output, 参数是output的名字
+
+	--mode 1024x768
+		设置分辨率
+	--prop
+		显示output的属性
+	--auto
+		自动设置最优模式
+	--reflect 'normal','x','y','xy'
+		镜像输出
+	--rotate 'normal','left',right','inverted'
+		旋转
+	--left-of
+	--right-of
+	--above
+	--below
+	--same-as 'another-output'
+		设置两个output的相对位置
+	--brightness brightness
+		在软件上调整output的亮度, 1为正常
+	--off
+		关闭output
+	
+
+== example ==
+dual screen 设置:
+	xrandr --output LVDS --auto --output VGA --auto --right-of LVDS	#expand mode
+	xrandr --output LVDS --auto --output VGA --auto --same-as LVDS	#clone mode
+	xrandr --output LVDS --auto --output VGA --off
+
+使用自定义分辨率显示:
+	使用'cvt'计算出modeline参数
+	xrandr --newmode "1000x768" modeline
+	xrandr --addmode VGA 1000x768
+	xrandr --output VGA --mode 1000x768

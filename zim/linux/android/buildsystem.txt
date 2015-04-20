@@ -1,0 +1,9 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-05-02T09:19:41+08:00
+
+====== buildsystem ======
+Created 星期三 02 五月 2012
+
+build/core/pathmap.mk:
+A mapping from shorthand names to include directories.

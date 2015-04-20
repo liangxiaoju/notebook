@@ -1,0 +1,23 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-01-23T10:20:56+08:00
+
+====== OpenAPI ======
+Created 星期四 23 一月 2014
+
+== 查词接口 ==
+返回格式：XML
+传入参数：
+w	:	单词/汉字
+例如：http://dict-co.iciba.com/api/dictionary.php?w=go&key=********
+** eg. **
+http://dict-co.iciba.com/api/dictionary.php?w=%E4%B8%AD%E5%9B%BD&key=F5659FA74354A3BDA64C48487254DC5F
+
+== 每日一句接口 ==
+传入参数：
+file	//数据格式，默认（json），可选xml
+date	//标准化日期格式 如：2013-05-06， 如：http://open.iciba.com/dsapi/?date=2013-05-03
+如果 date为空 则默认取当日的，当日为空 取前一日的
+type(可选)	// last 和 next 你懂的，以date日期为准的，last返回前一天的，next返回后一天的
+** eg. **
+http://open.iciba.com/dsapi/?date=2014-1-22&file=xml&type=next

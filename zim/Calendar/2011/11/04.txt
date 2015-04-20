@@ -1,0 +1,15 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-11-04T17:55:20+00:00
+
+====== 星期五 04 11月 2011 ======
+
+
+缩短resume时间
+
+lcd resume
+如果用early_suspend,那display_encoder也必须用early_suspend,
+
+但display_encoder可能在初始化以后需要一段时间才能正常显示，所以需要
+把display_encoder放在device的resume里，否则在亮背光以后有一段时间
+看不到图像，当然android在亮背光以后也隔了一段时间才更新FB 。

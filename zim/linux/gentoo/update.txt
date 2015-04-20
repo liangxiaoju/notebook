@@ -1,0 +1,38 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-01T14:24:27+08:00
+
+====== update ======
+Created 星期日 01 四月 2012
+
+#emerge –-sync      //升级整个portage目录
+
+#emerge portage     //如果不是最新的portage，需要按提示执行此操作
+#emerge python     //如果不是最新的python，需要按提示执行此操作
+#python-update     //执行完emerge python后执行此操作
+#perl-cleaner all	//修复perl
+
+#emerge -avuDN world      //按照 /var/lib/portage/world 文件下的包，重新构建整个系统
+ 参数说明：  –ask (-a)  控制Portage显示它要更新的软件包列表，并让您决定是否继续更新
+                –verbose (-v) 在屏幕上输出完整的文件列表
+                –update (-u) 更新包的最佳版本
+                –deep (-D)  更新系统中的每个软件包
+                –newuse (-N) USE标记变更后，要使Portage检查USE标记的变动是否导致
+                            需要安装新的软件包或者将现有的包重新编译
+
+#emerge -av –-depclean     //清除不需要（孤立）的软件包
+
+#revdep-rebuild     //gentoolkit包里面的一个软件，用来检查系统的依赖关系是否都满足，
+                            自动安装没有满足关系的包
+
+#dispatch-conf     //更新系统的配置文件
+
+#emerge -e world     //本地重新编译整个系统，USE标记变化不大时不需执行
+ 参数说明： –emptytree (-e) 
+
+ 
+
+    emerge –sync
+    emerge -vuD –newuse world
+    emerge –depclean
+    revdep-rebuild

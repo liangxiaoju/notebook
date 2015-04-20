@@ -1,0 +1,14 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2013-07-23T17:36:49+08:00
+
+====== RecoverySystem ======
+Created 星期二 23 七月 2013
+
+/**
+ * RecoverySystem contains methods for interacting with the Android
+ * recovery system (the separate partition that can be used to install
+ * system updates, wipe user data, etc.)
+ */
+
+''frameworks/base/core/java/android/os/RecoverySystem.java''

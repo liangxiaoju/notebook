@@ -1,0 +1,19 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-11-07T11:34:35+00:00
+
+====== 星期一 07 11月 2011 ======
+
+
+1、M970电量显示
+2、亮度自动调节跟踪
+3、mic音量过小
+4、wifi睡眠唤醒
+
+
+
+
+I2C总线挂死
+i2c0上有axp192,lsm303,ltr502
+任何一个芯片异常都可能把总线拉低
+

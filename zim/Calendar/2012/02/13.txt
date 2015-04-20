@@ -1,0 +1,13 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-02-13T10:24:45+08:00
+
+====== 星期一 13  2月 2012 ======
+
+TAGS：bmp
+
+X8 R8 G8 B8:
+没有alpha通道，仅是在24bits的基础上不齐32bits，顺序是：0RGB
+
+A8 R8 G8 B8：
+有alpha通道，顺序：BGRA

@@ -1,0 +1,15 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-11-05T11:14:04+00:00
+
+====== 星期六 05 11月 2011 ======
+
+
+启动速度：
+
+initcall i2c_adap_s3c_init+0x0/0x1c returned 0 after 232696 usecs
+initcall display_encoder_init+0x0/0x38 returned 0 after 325751 usecs   （7034）
+initcall s3c_onenand_init+0x0/0x1c returned 0 after 1685993 usecs
+initcall s5p_hpd_init+0x0/0x44 returned 0 after 983354 usecs
+initcall rda5802_init+0x0/0x50 returned 0 after 303945 usecs
+initcall axp192_power_init+0x0/0x1c returned 0 after 662825 usecs

@@ -1,0 +1,32 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-11-02T10:00:10+00:00
+
+====== core ======
+Created 星期三 02 十一月 2011
+
+mmc_init中做了三件事：
+1，mmc_register_bus
+	注册了一条mmc总线mmc_bus_type,下面挂着所有的mmc_card和mmc_driver;
+2, mmc_register_host_class
+	在/sys/class下注册了一个mmc_host，包含了所有的host controller;
+3, sdio_register_bus
+	一条名为sdio的总线，在sdio里用sdio_driver和sdio_func来分别表示driver和device，同时func->dev.parent=&card->dev;即每个sdio_func都是mmc_card的一个子设备。
+
+
+
+注册流程：
+
+host controller driver调用mmc_add_host将host加入到mmc_host类中；
+
+当有设备插入时，host controller driver 调用mmc_detect_change通知core，
+core通过mmc_rescan去确认是否有卡在，如果有新卡插入，则通过
+mmc_send_io_op_cond,mmc_send_app_op_cond,mmc_send_op_cond去判断sdio、sd或者是mmc，
+然后分别执行mmc_attach_sdio,mmc_attach_sd,mmc_attach_mmc去初始化；
+
+对于sdio，sd，mmc的初始化流程都差不多，用mmc_attach_bus为host加上总线操作函数mmc_bus_ops,
+然后是协议上的一些初始化，最后mmc_add_card将卡注册到设备模型里，
+即将card加入mmc总线，将parent设成host controller；
+
+如果是sdio，还要将sdio_func加入设备模型中，即将sdio_func放在sdio bus下，并作为card的子设备；
+

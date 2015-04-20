@@ -1,0 +1,35 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-12-28T09:50:16+08:00
+
+====== 009 ======
+Created 星期五 28 十二月 2012
+
+TAGS: python
+python: ConfigParser
+
+## ConfigParser - 配置文件分析器
+
+- **example**
+
+    [section-1]
+    option = value
+
+    [section-2]
+    option = value
+
+- **usage**
+
+    conf = ConfigParser.ConfigParser()
+    flist = conf.read("/tmp/config.ini")
+    sections = conf.sections()
+    options1 = conf.options(sections[0])
+    conf.get(sections[0], options1[0])
+    conf.items(sections[0])
+    conf.getboolean(sections[0], options1[1])
+
+    conf.add_section("section-3")
+    conf.set("section-3", "option3", 5)
+    with open("/tmp/config.ini", "wb") as configfile:
+         conf.write(configfile)
+

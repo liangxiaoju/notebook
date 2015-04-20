@@ -1,0 +1,19 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-02-11T17:04:24+08:00
+
+====== 002 ======
+Created 星期六 11 二月 2012
+
+TAGS: python
+python:operator
+
+ + - * / % **
+
+**: 乘方
+
+< <= > >= == !=
+
+and or not
+not 6.2 <= 6
+3<4<5

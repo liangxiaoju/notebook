@@ -1,0 +1,31 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-12-08T10:34:42+08:00
+
+====== image ======
+Created 星期四 08 十二月 2011
+
+** 制作 boot.img **
+	* ramdisk
+	''out/host/linux-x86/bin/mkbootfs out/target/product/e9/root | out/host/linux-x86/bin/minigzip > out/target/product/e9/ramdisk.img''
+	* ramdisk-uboot.img
+	''mkimage -A arm -O linux -T ramdisk -C none -a 0x30800000 -n "ramdisk" -d out/target/product/e9/ramdisk.img out/target/product/e9/ramdisk-uboot.img''
+	* boot.img
+	''out/host/linux-x86/bin/mkbootimg  --kernel out/target/product/e9/zImage --ramdisk out/target/product/e9/ramdisk-uboot.img --cmdline "console=ttyFIQ0 no_console_suspend" --base 0x30000000 --pagesize 4096 --output out/target/product/e9/boot.img''
+
+
+** 制作 system.img **
+	* systemimage_intermediates
+	''out/host/linux-x86/bin/mkyaffs2image -f -c 4096 -s 128 out/target/product/e9/system out/target/product/e9/obj/PACKAGING/systemimage_intermediates/system.img''
+	* acp
+	''out/host/linux-x86/bin/acp -fpt out/target/product/e9/obj/PACKAGING/systemimage_intermediates/system.img out/target/product/e9/system.img''
+
+** 制作 recovery.img **
+	* ramdisk-recovery.img
+	''out/host/linux-x86/bin/mkbootfs out/target/product/e9/recovery/root | out/host/linux-x86/bin/minigzip > out/target/product/e9/ramdisk-recovery.img''
+	* ramdisk-recovery-uboot.img
+	''mkimage -A arm -O linux -T ramdisk -C none -a 0x30800000 -n "ramdisk" -d out/target/product/e9/ramdisk-recovery.img out/target/product/e9/ramdisk-recovery-uboot.img''
+	* recovery.img
+	''out/host/linux-x86/bin/mkbootimg  --kernel out/target/product/e9/zImage  --ramdisk out/target/product/e9/ramdisk-recovery.img --cmdline "console=ttyFIQ0 no_console_suspend" --base 0x30000000 --pagesize 4096 --output out/target/product/e9/recovery.img''
+** 制作 userdata.img **
+	''out/host/linux-x86/bin/mkyaffs2image -f -c 4096 -s 128 out/target/product/e9/data out/target/product/e9/userdata.img''

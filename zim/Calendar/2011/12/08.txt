@@ -1,0 +1,7 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-12-08T09:06:47+08:00
+
+====== 星期四 08 12月 2011 ======
+
+echo mem | sudo tee /sys/power/state

@@ -1,0 +1,25 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-11-07T10:16:22+08:00
+
+====== build-lib ======
+Created 星期三 07 十一月 2012
+
+TAGS: shared pic static
+
+编译静态库:
+
+	gcc -c sub1.c sub2.c
+		-c: 只编译不链接
+
+	ar -r libsub.a sub1.o sub2.o
+
+	gcc -static -o main main.c -lsub
+
+编译动态库:
+
+	gcc -c -fpic sub1.c sub2.c
+
+	gcc -shared sub1.o sub2.o -o libsub.so
+
+	gcc -o main main.c -lsub

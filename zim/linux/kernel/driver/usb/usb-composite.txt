@@ -1,0 +1,201 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-10-21T22:44:38+08:00
+
+====== usb-composite ======
+
+Created 星期二 18 十月 2011
+
+ struct __usb_function__ {
+	const char			*name;
+	struct usb_gadget_strings	**strings;
+	struct usb_descriptor_header	**descriptors;
+	struct usb_descriptor_header	**hs_descriptors;
+
+	struct usb_configuration	*config;
+
+	/* disabled is zero if the function is enabled */
+	int				disabled;
+
+	/* REVISIT:  bind() functions can be marked __init, which
+	* makes trouble for section mismatch analysis.  See if
+	* we can't restructure things to avoid mismatching.
+	* Related:  unbind() may kfree() but bind() won't...
+	 */
+
+	/* configuration management:  bind/unbind */
+	int			(*bind)(struct usb_configuration *,
+					struct usb_function *);
+	void			(*unbind)(struct usb_configuration *,
+					struct usb_function *);
+
+	/* runtime state management */
+	int			(*set_alt)(struct usb_function *,
+					unsigned interface, unsigned alt);
+	int			(*get_alt)(struct usb_function *,
+					unsigned interface);
+	void			(*disable)(struct usb_function *);
+	int			(*setup)(struct usb_function *,
+					const struct usb_ctrlrequest *);
+	void			(*suspend)(struct usb_function *);
+	void			(*resume)(struct usb_function *);
+
+	/* private: */
+	/* internals */
+	struct list_head		list;
+	struct device			*dev;
+};
+
+usb_function 代表复合类设备的一个功能，一个usb_function可以包含几个usb interface，
+其中的bind函数会在把function加入到configuration时（usb_add_function）被调用，
+每加入一个function（usb_add_function），都会在/sys/class/usb_composite/下生成一个目录，通过里面的enable
+属性文件可以使能和关闭这个function。
+struct usb_configuration	*config; 指的是这个function所属的configuration;
+struct list_head		list; 用于将这个function加入到所属configuration的functions链表中;
+与usb_function相关的函数还有：
+int usb_function_deactivate(struct usb_function *function)
+int usb_function_activate(struct usb_function *function)
+主要是调用了usb_gadget_connect 和usb_gadget_disconnect，
+这两个函数其实调用的是gadget的pullup函数，即控制D+和D-的上拉。
+一旦上拉，这个function对于host就是可见的了，host就会开始enum过程。
+
+
+再来看一下configuration
+struct __usb_configuration__ {
+	const char			*label;
+	struct usb_gadget_strings	**strings;
+	const struct usb_descriptor_header **descriptors;
+
+	/* REVISIT:  bind() functions can be marked __init, which
+	* makes trouble for section mismatch analysis.  See if
+	* we can't restructure things to avoid mismatching...
+	 */
+
+	/* configuration management:  bind/unbind */
+	int			(*bind)(struct usb_configuration *);
+	void			(*unbind)(struct usb_configuration *);
+	int			(*setup)(struct usb_configuration *,
+					const struct usb_ctrlrequest *);
+
+	/* fields in the config descriptor */
+	u8			bConfigurationValue;
+	u8			iConfiguration;
+	u8			bmAttributes;
+	u8			bMaxPower;
+
+	struct usb_composite_dev	*cdev;
+
+	/* private: */
+	/* internals */
+	struct list_head	list;
+	struct list_head	functions;
+	u8			next_interface_id;
+	unsigned		highspeed:1;
+	unsigned		fullspeed:1;
+	struct usb_function	*interface[MAX_CONFIG_INTERFACES];
+};
+这里有两个链表，list用于将这个configuration插入到所属usb_composite_dev的configs
+链表中; 而functions则是用于将所有属于这个configuration的function串起来；
+bind函数会在usb_add_config把configuration加入到composite_dev时调用，
+interface毫无疑问存的就是属于这个configuration的所有functions。
+
+接下来是usb_composite_dev
+struct __usb_composite_dev__ {
+	struct usb_gadget		*gadget;
+	struct usb_request		*req;
+	unsigned			bufsiz;
+
+	struct usb_configuration	*config;
+
+	/* private: */
+	/* internals */
+	struct usb_device_descriptor	desc;
+	struct list_head		configs;
+	struct usb_composite_driver	*driver;
+	u8				next_string_id;
+
+	/* the gadget driver won't enable the data pullup
+	* while the deactivation count is nonzero.
+	 */
+	unsigned			deactivations;
+
+	/* protects at least deactivation count */
+	spinlock_t			lock;
+
+	struct switch_dev sdev;
+	/* used by usb_composite_force_reset to avoid signalling switch changes */
+	bool				mute_switch;
+	struct work_struct switch_work;
+};
+这个比较简单，代表的是一个composite gadget，config就是当前使用的configuration，configs就不说了，
+driver就是这个device对应的驱动了，switch_work用于在/sys/class/switch/下生成
+各个functions的switch。
+
+好了，最后看一下usb_composite_driver
+struct __usb_composite_driver__ {
+	const char				*name;
+	const struct usb_device_descriptor	*dev;
+	struct usb_gadget_strings		**strings;
+
+	struct class		*class;
+	atomic_t		function_count;
+
+	/* REVISIT:  bind() functions can be marked __init, which
+	* makes trouble for section mismatch analysis.  See if
+	* we can't restructure things to avoid mismatching...
+	 */
+
+	int			(*bind)(struct usb_composite_dev *);
+	int			(*unbind)(struct usb_composite_dev *);
+
+	/* global suspend hooks */
+	void			(*suspend)(struct usb_composite_dev *);
+	void			(*resume)(struct usb_composite_dev *);
+
+	void			(*enable_function)(struct usb_function *f, int enable);
+};
+当你定义好自己的composite_driver后，就可以调用usb_composite_register把driver
+注册进去，usb_composite_register只是usb_gadget_register_driver的封装，
+composite就是gadget的封装，需要在自己的udc驱动里实现usb_gadget_register_driver,
+主要做的就是调用usb_gadget_driver的bind函数，然后使能udc；
+对于composite，在composite.c里已经实现了
+static struct usb_gadget_driver composite_driver = {
+	.speed		= USB_SPEED_HIGH,
+
+	.bind		= composite_bind,
+	.unbind		= __exit_p(composite_unbind),
+
+	.setup		= composite_setup,
+	.disconnect	= composite_disconnect,
+
+	.suspend	= composite_suspend,
+	.resume		= composite_resume,
+
+	.driver	= {
+		.owner		= THIS_MODULE,
+	},
+};
+所以composite_bind会被调用，在composite_bind里做的就是分配好控制传输的buffer，
+还注册了一个名为usb_configuration的switch，用于显示usb_composite_dev当前的configuration
+中的bConfigurationValue字段，然后调用usb_composite_driver的bind函数，
+在static struct usb_composite_driver android_usb_driver里，bind指向android_bind，
+而android_bind调用了usb_add_config把自己的configuration加入到device中，
+static struct __usb_configuration__ android_config_driver = {
+	.label		= ANDROID_NO_DEBUG_CONFIG_STRING,
+	.bind		= android_bind_config,
+	.setup		= android_setup_config,
+	.bConfigurationValue = 1,
+	.bmAttributes	= USB_CONFIG_ATT_ONE | USB_CONFIG_ATT_SELFPOWER,
+	.bMaxPower	= 0xFA, /* 500ma */
+};
+前面说过usb_add_config会调用config的bind，而在android_bind_config中会通过usb_add_function
+将所有functions加入到configuration中，还是之前说过的，usb_add_function会调用function的bind，
+具体到f_mass_storage，fsg_function_bind中会为每个lun分配空间，生成sys属性文件，通过
+usb_interface_id(c, f)分配接口id，这个函数同时将function加入到configuration的interface[]中，然后
+通过usb_ep_autoconfig函数，根据提供的端点描述符在gadget的端点列表中找到合适的端点，然后创建
+fsg_main_thread线程用于响应scsi命令，OK
+
+对于setup，首先是从udc驱动的端点0中断发起，然后到driver的composite_setup，然后调用function的setup，
+具体到f_mass_storage就是填好自己有多少个luns等等之类的东西。
+
+夜了，睡觉去，明天还要上班啊！赶紧了！

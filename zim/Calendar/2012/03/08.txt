@@ -1,0 +1,11 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-03-08T22:38:54+08:00
+
+====== 星期四 08  3月 2012 ======
+
+TAGS: uboot, objdump
+
+反汇编uboot：
+arm-unknown-linux-gnueabi-objdump -D -b binary -m arm u-boot.bin > u-boot.asm
+arm-unknown-linux-gnueabi-objdump -D u-boot > u-boot.asm

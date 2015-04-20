@@ -1,0 +1,119 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-07-02T16:17:56+08:00
+
+====== bootup ======
+Created 星期一 02 七月 2012
+
+init
+
+** system/core/rootdir/init.rc **
+	service zygote /system/bin/app_process -Xzygote /system/bin --zygote
+	--start-system-server
+	class main
+	socket zygote stream 666
+	onrestart write /sys/android_power/request_state wake
+	onrestart write /sys/power/state on
+	onrestart restart media
+	onrestart restart netd
+
+** cmds/app_process/app_main.c **
+	runtime.start("com.android.internal.os.ZygoteInit",
+			startSystemServer ? "start-system-server" : "");
+
+** core/jni/AndroidRuntime.cpp **
+	AndroidRuntime::start() {
+		/* creat VM */
+		AndroidRuntime::startVm();
+
+		/* Register android native functions with the VM */
+		AndroidRuntime::startReg();
+
+		/* start VM: call ZygoteInit's main() */
+		jclass startClass = env->FindClass(
+				com/android/internal/os/ZygoteInit);
+		jmethodID startMeth = env->GetStaticMethodID(startClass,
+				"main","([Ljava/lang/String;)V");
+		env->CallStaticVoidMethod(startClass, startMeth, strArray);
+
+		/* should not return */
+	}
+
+** core/java/com/android/internal/os/ZygoteInit.java **
+	main() {
+		try {
+			/* init socket */
+			registerZygoteSocket();
+
+			/* start systemserver */
+			startSystemServer();
+
+			/* child wouldn't return */
+
+			/* parent: recv peer from 'ActivityManagerService' and fork */
+			runSelectLoopMode();
+
+		} catch (MethodAndArgsCaller caller) {
+			caller.run();
+		}
+	}
+
+	startSystemServer() {
+		Zygote.forkSystemServer();
+
+		/* For child process */
+		if (pid == 0)
+			handleSystemServerProcess();
+
+		/* parent return */
+	}
+
+	handleSystemServerProcess() {
+		RuntimeInit.zygoteInit();
+	}
+
+** core/java/com/android/internal/os/RuntimeInit.java **
+	RuntimeInit::zygoteInit() {
+		zygoteInitNative();
+		/* invoke com.android.server.SystemServer's main() */
+		applicationInit(); --> invokeStaticMain(); -->
+			throw new ZygoteInit.MethodAndArgsCaller(m, argv);
+	}
+
+** sevices/java/com/android/server/SystemServer.java **
+	main() {
+		System.loadLibrary("android_servers");
+		init1(args);
+	}
+
+** services/jni/com_android_server_SystemServer.cpp **
+	native init1 --> android_server_SystemServer_init1
+	android_server_SystemServer_init1() {
+		system_init();
+	}
+
+** cmds/system_server/library/system_init.cpp **
+	system_init() {
+		/* invoke com.android.server.SystemServer's init2() */
+		JNIEnv* env = runtime->getJNIEnv();
+		jclass clazz = env->FindClass("com/android/server/SystemServer");
+		jmethodID methodId = env->GetStaticMethodID(clazz, "init2", "()V");
+		env->CallStaticVoidMethod(clazz, methodId);
+
+		/* enter thread pool */
+		ProcessState::self()->startThreadPool();
+		IPCThreadState::self()->joinThreadPool();
+	}
+
+** sevices/java/com/android/server/SystemServer.java **
+	init2() {
+		Thread thr = new ServerThread();
+		thr.setName("android.server.ServerThread");
+		thr.start();
+	}
+
+__ summary __
+	* init进程创建zygote进程，zygote进程负责后续android应用框架层的进程创建和启动。
+	* zygote首先会创建SystemServer子进程，然后父进程在等待ActivityManagerService发
+		过来的创建应用程序的请求，子进程负责启动系统的关键服务，比如PackageManagerService和ActivityManagerService。
+	* 当需要启动一个Android应用程序时，ActivityManagerService会通过socket进程间通信机制，通知zygote创建一个新进程。

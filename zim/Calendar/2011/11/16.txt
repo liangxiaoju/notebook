@@ -1,0 +1,12 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-11-16T10:14:17+00:00
+
+====== 星期三 16 11月 2011 ======
+
+
+TP:
+现象：有些机器开机后不能与TP通信，命令行输入reboot重启后才可以。
+
+解决：原因是TP没有正确复位，在801和8110的驱动里加入TP_nRST的控制
+并在复位后延时30ms，TP工作正常。

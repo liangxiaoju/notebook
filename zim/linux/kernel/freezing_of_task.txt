@@ -1,0 +1,35 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-11-22T15:01:05+08:00
+
+====== freezing of task ======
+Created 星期四 22 十一月 2012
+
+=== how does it work ===
+
+freeze_processes():
+	向用户空间进程发送一个fake信号
+	唤醒所有的内核进程
+
+用户空间进程在fake信号处理函数里try_to_freeze()
+
+内核进程在自己的主循环里wait_event_freezable()
+
+无论用户空间进程还是内核进程,最后都会冻结进refrigerator
+
+进程冻结后的状态是:
+	for (;;) {
+		set_current_state(TASK_UNINTERRUTIBLE);
+		if (!frozen(current))
+			break;
+		schedule();
+	}
+
+=== problems related to the freezing of task ===
+
+1. 两个进程之间可能存在循环依赖
+2. 扰乱系统的平均负载
+3. 有些驱动框架运行于用户空间,让事情变得更复杂
+
+linus反对冻结内核进程,他认为冻结用户空间进程然后等待sync
+可以让事情变得简单.

@@ -1,0 +1,7 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-10-20T18:17:57+00:00
+
+====== linux ======
+Created 星期四 20 十月 2011
+

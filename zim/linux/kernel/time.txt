@@ -1,0 +1,11 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-03-02T14:12:17+08:00
+
+====== time ======
+Created 星期五 02 三月 2012
+
+TAGS: time
+
+monotonic time 指系统启动以后流逝的时间，由jiffies记录;
+wall time 指现实时间，由xtime记录。

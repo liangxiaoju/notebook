@@ -1,0 +1,17 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-07-02T17:44:10+08:00
+
+====== memo ======
+Created 星期三 02 七月 2014
+
+* problem:
+Get:1 http://ports.ubuntu.com trusty/main Sources [1064 kB]
+Fetched 1064 kB in 15s (69.2 kB/s)                                             
+W: Failed to fetch bzip2:/var/lib/apt/lists/partial/ports.ubuntu.com_ubuntu-ports_dists_trusty_main_source_Sources  Hash Sum mismatch
+
+E: Some index files failed to download. They have been ignored, or old ones used instead.
+
+* solve:
+rm [[/var/lib/apt/lists/*]]
+apt-get update

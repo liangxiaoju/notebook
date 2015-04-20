@@ -1,0 +1,26 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-11-28T09:35:26+08:00
+
+====== favorite ======
+Created 星期一 28 十一月 2011
+
+vi模式：
+set -o vi
+
+常用软件：
+
+firefox插件：
+pentadactyl
+
+音乐工具：
+mutagen
+
+feh
+zathura
+moc
+''/var/lib/layman/gentoo-zh''
+''/var/lib/layman/sunrise''
+''/var/lib/layman/seden''
+
+test 3D: mesa-progs(glxinfo glxgears)

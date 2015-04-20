@@ -1,0 +1,67 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-07-10T16:02:43+08:00
+
+====== bugzilla ======
+Created 星期四 10 七月 2014
+
+== install bugzilla ==
+'''
+USE="sqlite" emerge bugzilla
+cd /var/www/localhost/htdocs/bugzilla/
+sudo ./checksetup.pl
+edit localconfig:
+    '''
+    "$db_driver='sqlite'"
+    "$webservergroup='apache'"
+    '''
+sudo ./checksetup.pl
+input your admin account
+'''
+
+== configure apache ==
+    edit '/etc/apache2/vhosts.d/bugzilla_vhost.conf'
+'''
+Listen 8000
+ServerName localhost
+
+<VirtualHost *:8000>
+	DocumentRoot "/var/www/localhost/htdocs/"
+	<Directory "/var/www/localhost/htdocs/bugzilla">
+		AddHandler cgi-script .cgi
+		DirectoryIndex index.cgi index.html
+		Options +FollowSymLinks +Indexes +ExecCGI
+		AllowOverride All
+		Require all granted
+	</Directory>
+</VirtualHost>
+'''
+
+== misc ==
+bugzilla-4.4.4 's .htaccess use old apache configurations syntax [Order,Allow,Deny,Satisfy],
+so we have to append 'access_compat' to 'APACHE2_MODULES' and rebuild apache.
+
+== configure bugzilla ==
+open 'localhost:8000/bugzilla'
+login with your admin account
+configure bugzilla in the webpage
+'''
+urlbase => http://x.x.x.x:8000/bugzilla/
+cookiepath => /bugzilla
+'''
+
+== bugzilla localized templates ==
+http://code.google.com/p/bugzilla-tw/
+http://code.google.com/p/bugzilla-cn/
+
+== bugzilla mail ==
+ensure the following:
+'''
+mail_delivery_method => SMTP
+mailfrom => postmaster@xx.com
+maintainer => liangxiaoju@xx.com
+smtp_username => postmaster@xx.com
+smtpserver => smtp.xx.com:25
+smtp_password => 123456
+'''
+

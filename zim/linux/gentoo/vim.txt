@@ -1,0 +1,7 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-12-05T09:38:41+08:00
+
+====== vim ======
+Created 星期一 05 十二月 2011
+

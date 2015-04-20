@@ -1,0 +1,17 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-12-02T15:21:18+08:00
+
+====== cifs ======
+Created 星期五 02 十二月 2011
+
+安装cifs-utils
+chmod u+s /sbin/mount.cifs
+kernel config里选上cifs support
+windows下可能需要打开guest权限
+
+使用：
+mount -t cifs //${SERVER_IP}/${SHARE_FOLDER} ${MOUNT_POINT}
+
+在/etc/fstab里加入：
+//${SERVER_IP}/${SHARE_FOLDER}	${MOUNT_POINT}	cifs	noauto,rw,user,nosuid	0 0

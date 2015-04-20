@@ -1,0 +1,68 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-09-17T10:16:27+08:00
+
+====== ubi ======
+Created 星期一 17 九月 2012
+
+tags: ubi
+
+device -|- block -|- page -|- {data, oob}
+        |- ...    |- ...
+
+擦除操作的最小单位是块
+
+Nand Flash 每一个位都只能从1变到0, 不能从0变到1.
+所以写数据之前一定要把相应块擦除(即全部变成1).
+
+oob部分的第六字节(即517字节)标志是否是坏块,如果不是坏块,
+该值是FF,否则是坏块.
+
+通常至少把oob的前3个字节存放硬件ECC码.
+
+BBT: bad block table
+LEB: logical erase block
+PEB: physical erase block
+eba_tbl: EBA table of the volume(LEB <-> PEB mapping)
+longterm: high erase counter
+shorterm: lowest erase counter
+
+vtbl.c: volume table
+vmt.c: volume operation (create, remove ...)
+upd.c: volume update data
+eba.c: eraseblock association sub-system(LEB <-> PEB mapping)
+wl.c: wear-leveling sub-system
+io.c: talk to MTD devices
+
+static volume:
+       read_only
+       contents protected by crc32
+
+dynamic volume:
+        read-write
+        upper-layer ensure data integrity
+
+scrubbing:
+        moving data from PEBs which have
+        bit-flips to other PEBs in background,
+        hidden from upper layer
+
+PEB:
+        ---------------------
+        |    EC(64bytes)    |page       擦除PEB时写入
+        |      null         |
+        ---------------------
+        |   VID(64bytes)    |page       PEB <-> LEB mapping时写入
+        |      null         |
+        ---------------------
+        |       DATA        |
+        |                   |
+        ---------------------
+如果mtd设备支持sub-page,ubi仅把sub-page用于headers,不作它用.
+不用sub-page的原因:
+        write to a sub-page, driver的实现可能是把其它无关的sub-page置0xff,
+        然后按一个page进行write.
+
+volume table
+EBA table
+EC table

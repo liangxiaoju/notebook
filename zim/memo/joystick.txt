@@ -1,0 +1,30 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-03-18T17:56:10+08:00
+
+====== joystick ======
+Created 星期二 18 三月 2014
+
+P + X:
+left stick: ABS_X && ABS_Y && BTN_THUMBL
+right stick: ABS_RX && ABS_RY && BTN_THUMBR
+D-PAD: ABS_HAT0X && ABS_HAT0Y
+ABXY: BTN_A && BTN_B && BTN_X && BTN_Y
+back/start/mode: BTN_SELECT && BTN_START && BTN_MODE
+LB/RB/LT/RT: BTN_TL && BTN_TR && ABS_Z && ABS_RZ
+
+P + DA:
+left stick: ABS_X && ABS_Y && BTN_SELECT
+right stick: ABS_Z && ABS_RZ && BTN_START
+D-PAD: ABS_HAT0X && ABS_HAT0Y
+ABXY: BTN_C && BTN_B && BTN_X && BTN_A
+back/start/mode: BTN_TL2 && BTN_TR2 && NONE
+LB/RB/LT/RT: BTN_Y && BTN_Z && ABS_TL && ABS_TR
+
+DA + DD:
+left stick: ABS_X && ABS_Y && BTN_THUMBL
+right stick: ABS_Z && ABS_RZ && BTN_THUMBR
+D-PAD: ABS_HAT0X(ABS_BRAKE && ABS_GAS) && ABS_HAT0Y
+ABXY: BTN_A && BTN_B && BTN_X && BTN_Y
+back/start/mode: BTN_SELECT && BTN_START && BTN_MODE
+LB/RB/LT/RT: BTN_TL && BTN_TR && BTN_TL2 && BTN_TR2

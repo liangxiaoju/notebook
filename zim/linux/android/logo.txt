@@ -1,0 +1,54 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-07-03T10:29:25+08:00
+
+====== logo ======
+Created 星期二 03 七月 2012
+
+TAGS: android, logo
+
+* kernel logo
+
+* android logo
+	''system/core/init/init.c''
+	首先尝试加载''/initlogo.rle''文件，如果失败则将tty0设置成TEXT模式并输出"ANDROID"字样。
+
+	rle： 一种简单的压缩格式
+		缺省使用的是rgb565格式 struct {
+			unsigned short n; //连续rgb565值相同的像素点个数
+			unsigned short rgb;
+		};
+	''build/tools/rgb2565/to565.c'': 将raw888转成rgb565的工具
+	usage:
+	* png --> raw888
+		''convert -depth 8 logo.png rgb:logo.raw''
+	* raw888 --> rgb565 rle
+		''rgb2565 -rle < logo.raw > initlogo.rle''
+	* raw888 --> rgb565 raw dither
+		''rgb2565 -w 6 < logo.raw > initlogo.raw''
+	* raw888 --> rgb565 raw
+		''rgb2565 < logo.raw > initlogo.raw''
+
+* android bootanimation
+	file:
+	''cmds/bootanimation/bootanimation_main.cpp''
+	''cmds/bootanimation/BootAnimation.cpp''
+
+	通过设置 debug.sf.nobootanimation=1 来disable开机动画
+	通过设置 ro.sf.hwrotation 和 ro.sf.fakerotation 来控制旋转
+	动画压缩包查找路径：
+		''/data/local/bootanimation.zip''
+		''/system/media/bootanimation.zip''
+
+	bootanimation.zip:
+		''desc.txt''
+			1024 768 24
+			p 1 0 part0
+			p 0 0 part1
+			* 宽 高 帧
+			* p为标识，第二项为循环次数（0为无限），第三项为两次循环间隔的帧数，第四项为目录
+		''part0/''
+		''part1/''
+			* 一般part0播放一遍或几遍，然后用part1一直循环
+		打包方法：
+			''zip -0 -r ../bootanimation.zip ./*''

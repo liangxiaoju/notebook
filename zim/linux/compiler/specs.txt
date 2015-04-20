@@ -1,0 +1,44 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-02-29T16:41:16+08:00
+
+====== specs ======
+Created 星期三 29 二月 2012
+
+About Specs file
+
+The "gcc" program invoked by users is a convenient front-end driver executable which will invoke other programs in the background such as cc1, as or ld to do its work according to the command line parameter given. A specs file is plain text used to control the default behavior for the "gcc" front-end. The specs file is usually built-in but for flexibility purposes, it can be overridden with an external version. Example use: link against a different version of msvcrt.dll.
+Basic Specs file modifications
+
+GCC will produce a specs file via the following command.
+
+gcc -dumpspecs > specs
+
+You may use a text editor of your choice to inspect it. It may be confusing at first, but there are many places of interest. To use the specs file, invoke gcc with -specs=<path_to_specs_file> or place it at "/mingw/lib/gcc/mingw32/<version>/specs" to make GCC use it by default, where <version> refers to the GCC version installed.
+Adding include directories to the search path
+
+The *cpp: section should be modified. It contains the following by default:
+
+*cpp:
+%{posix:-D_POSIX_SOURCE} %{mthreads:-D_MT}
+
+If "z:\libx\include" needs to be added to the GCC includes search path, it should be changed to the following
+
+*cpp:
+%{posix:-D_POSIX_SOURCE} %{mthreads:-D_MT} -I z:/libx/include
+
+Adding lib directories to the search path
+
+The *link_libgcc: section should be modified. It contains the following by default:
+
+*link_libgcc:
+%D
+
+If "z:\libx\lib" needs to be added to the GCC library search path, it should be changed to the following
+
+*link_libgcc:
+%D -L z:/libx/lib
+
+More Help
+
+[[http://gcc.gnu.org/onlinedocs/gcc-4.5.3/gcc/Spec-Files.html#Spec-Files|GCC-4.5.3 specs file help]]

@@ -1,0 +1,9 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-03-30T13:03:02+08:00
+
+====== 星期五 30  3月 2012 ======
+
+TAGS: uboot
+
+https://github.com/tekkamanninja/u-boot-2011.06-for-MINI6410.git

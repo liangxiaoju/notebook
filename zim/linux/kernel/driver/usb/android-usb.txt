@@ -1,0 +1,83 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-10-21T16:02:08+00:00
+
+====== android-usb ======
+Created 星期五 21 十月 2011
+
+==== android_usb ====
+drivers/usb/gadget/android.c
+
+先是注册一个platform设备，
+platform_driver_register(&android_platform_driver);
+看一下android_platform_driver，只有android_probe,
+在android_probe里只是根据mach初始化本地数据，
+然后usb_composite_register(&android_usb_driver);
+static struct usb_composite_driver android_usb_driver = {
+	...
+	.bind		= android_bind,
+	.enable_function = android_enable_function,
+};
+这个函数会注册一个usb_composite的类，可以在里面对它的所有
+functions进行enable和disable，然后执行udc驱动里的
+usb_gadget_register_driver(&composite_driver);
+--> composite_driver.bind
+	-->注册switch "usb_configuration"
+	-->android_usb_driver.bind
+		-->usb_add_config(cdev, &android_config_driver);
+
+static struct usb_configuration android_config_driver = {
+	.label		= "Android Composite",
+	.bind		= android_bind_config,
+	.setup		= android_setup_config,
+	.bConfigurationValue = 1,
+	.bmAttributes	= USB_CONFIG_ATT_ONE | USB_CONFIG_ATT_SELFPOWER,
+	.bMaxPower	= 0xFA, /* 500ma */
+};
+
+在android_bind_config中判断如果mach里定义的所有functions都已经注册，就按mach里定义好的顺序依次调用每个android_usb_functon的bind_config函数。
+
+android.c只是composite和
+gadget层交互的一个框架，android把每个function都分离成一个文件，通过android_register_function注册进来,setup时udc驱动会调用android_setup_config,它在调用各个function的setup，从而完成enum过程，之后host与device的通信都是在各个分离的function驱动里完成。
+
+=== adb ===
+每个function驱动的bind_config所做的东西都差不多是一样的：
+申请自己的数据结构;
+设置好function里的descriptors，bind，unbind，set_alt，diable等等;
+调用usb_add_function
+
+adb为用户空间提供了两个misc接口：android_adb_enable和android_adb，
+android_adb_enable用于enable和disable这个function，
+
+static struct file_operations adb_fops = {
+	.owner = THIS_MODULE,
+	.read = adb_read,
+	.write = adb_write,
+	.open = adb_open,
+	.release = adb_release,
+};
+主要看adb_read和adb_write，
+
+== adb_write ==
+即android把上层的log信息写下来，然后通过usb再发送到host端。
+对于write操作，用的是ep_in端点，驱动里为adb_write准备了4个requst buffer，
+发数据时通过req_get获取一个buffer，发完后usb_request里的complete函数会
+被回调，这时候再把这个buffer回放到list中，
+usb_ep_queue(dev->ep_in, req, GFP_ATOMIC);向usb host发数据。
+
+== adb_read ==
+adb_read用于读取从host端发过来的数据，然后返回给android上层。
+adb_complete_in和adb_complete_out分别是ep_in和ep_out的回调函数，
+没有数据时adb_read会被block。
+
+所以adb的大概流程就是：
+android通过adb_read试图阻塞读取数据
+host端发来数据，adb_read将数据返回给android
+android通过adb_write将log信息写下来
+host端收到log信息并显示
+
+
+还有个疑问：android的所有log信息总得有个地方存起来吧，那它到底存在哪呢？
+答案在：drivers/staging/android/logger.c
+
+

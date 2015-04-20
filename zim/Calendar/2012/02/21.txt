@@ -1,0 +1,12 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-02-21T10:21:53+08:00
+
+====== 星期二 21  2月 2012 ======
+
+
+在qemu里直接运行arm程序：
+qemu-arm -L [[/usr/arm-unknown-linux-gnueabi/]] [[./foo]]
+
+如果需要直接运行./foo，可以使用binfmt_misc，
+参考Documentation/binfmt_misc.txt

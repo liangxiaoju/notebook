@@ -1,0 +1,49 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-06-10T14:57:57+08:00
+
+====== firewall ======
+Created 星期二 10 六月 2014
+
+TAGS: android firewall
+
+== Plan A ==
+
+android 已经基于iptables封装了一些简单的防火墙规则
+
+* netd
+'''
+ndc firewall enable
+ndc firewall disable
+ndc firewall set_interface_rule wlan0 allow/deny
+ndc firewall set_egress_source_rule 192.168.0.1 allow/deny
+ndc firewall set_egress_dest_rule 115.239.210.27 allow/deny
+ndc firewall set_uid_rule 1000 allow/deny
+'''
+
+* NetworkManagementService
+'''
+void setFirewallEnabled(boolean enabled);
+boolean isFirewallEnabled();
+/* 对具体网络接口设置firewall */
+void setFirewallInterfaceRule(String iface, boolean allow);
+/* 对本地地址设置firewall */
+void setFirewallEgressSourceRule(String addr, boolean allow);
+/* 对远端地址设置firewall */
+void setFirewallEgressDestRule(String addr, int port, boolean allow);
+/* 对具体uid设置firewall */
+void setFirewallUidRule(int uid, boolean allow);
+'''
+
+* 特点
+    无需改动,功能简单
+
+== Plan B ==
+
+直接基于iptables实现防火墙的规则接口
+
+* example
+    [[https://code.google.com/p/droidwall/source/checkout|droidwall]]
+
+* 特点
+    简单,功能完善

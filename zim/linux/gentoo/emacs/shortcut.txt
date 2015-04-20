@@ -1,0 +1,67 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-08-10T14:56:22+08:00
+
+====== shortcut ======
+Created 星期五 10 八月 2012
+
+TAGS: shortcutkeys
+
+* 宏定义跳转
+  C-c C-u
+  C-c C-p
+  C-c C-n
+
+* 函数跳转
+  C-M-a : 函数开始
+  C-M-e : 函数结束
+
+* 缩进
+  C-c C-q : 缩进当前function,class...
+
+* 注释
+  C-c C-c : 对选中区域注释
+  C-u C-c C-c : 去掉选中区域的注释
+  M-; : 在当前行尾添加注释
+  C-u M-; : 去掉当前行的注释
+
+* 大小写
+  M-u : 转换成大写
+  M-l : 转换成小写
+
+* git
+  C-x v l : 当前文件的log
+  C-x v L : 当前git root目录的log
+
+  在*vc-change-log*中的操作 :
+  p
+  n
+  P
+  N
+  f : 查看当前文件在光标所在commit的revision
+  a
+  e
+
+  C-x v I
+      Display the changes that a pull operation will retrieve (vc-log-incoming).
+  C-x v O
+      Display the changes that will be sent by the next push operation (vc-log-outgoing).
+
+* 标记
+  C-@ : 标记文本块的开始或结束
+  Esc h : 标记段落
+  C-x C-p : 标记页面
+  C-x h : 标记整个缓冲区
+  C-x C-x : 互换插入点与文本标记的位置
+
+* 交换
+  C-t : 当前光标所在字符与前一个字符对换
+  Esc t / M-t : 单词交换
+  C-x C-t : 行交换
+
+* 切换状态
+  toggle-read-only [C-x C-q] 切换当前缓冲区的可写状态
+
+* 自动补全
+  M-tab
+

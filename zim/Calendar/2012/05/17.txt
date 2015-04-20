@@ -1,0 +1,9 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-05-17T09:32:22+08:00
+
+====== 星期四 17  5月 2012 ======
+
+TAGS: ncurses
+
+note: 不通WINDOW的refresh可能会把其它WINDOW的内容覆盖。

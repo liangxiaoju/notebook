@@ -1,0 +1,8 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-10-21T15:02:57+00:00
+
+====== usb ======
+Created 星期五 21 十月 2011
+
+altsetting是针对接口下端点的配置，随着端点的使用或不使用，一个接口下的许多端点可以形成不同的组合，就出现了altsetting的说法。

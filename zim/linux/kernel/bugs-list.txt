@@ -1,0 +1,179 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-09-04T14:33:27+08:00
+
+====== bugs-list ======
+Created 星期二 04 九月 2012
+
+TAGS: bugs
+
+__==========__
+keys: prepare/complete, suspend/resume, get_seconds
+
+static int pmic_batt_suspend(struct device *dev)
+{
+        struct pmic_batt_coulomb *batt = &pmic_batt;
+
+        batt->sleep_time = get_seconds();
+
+        return 0;
+}
+
+/* run after system wall time has been updated */
+static void pmic_batt_complete(struct device *dev)
+{
+        struct pmic_batt_coulomb *batt = &pmic_batt;
+
+        batt->sleep_time = get_seconds() - batt->sleep_time;
+        batt->info.curr_coulomb -= batt->sleep_time * batt->info.suspend_current;
+}
+
+static const struct dev_pm_ops pmic_batt_pm = {
+       .suspend = pmic_batt_suspend,
+       .complete = pmic_batt_complete,
+};
+
+现象:
+        当有设备的suspend失败时,在complete中算得的sleep_time异常
+原因:
+        suspend/resume, prepare/complete要成对使用,
+        如果在pmic_batt_suspend调用之前有设备suspend失败返回,
+        就会造成pmic_batt_suspend没调用,pmic_batt_complete却被调用的情况,
+        这样算得的sleep_time肯定不对.
+__==========__
+
+__==========__
+keys: sound, competition, soft lockup
+static int s5p_i2s_wr_startup(struct snd_pcm_substream *substream,
+		struct snd_soc_dai *dai)
+{
+        ...
+	if (!tx_clk_enabled && !rx_clk_enabled) {
+		s5p_i2s_set_clk_enabled(dai, 1);
+		if (reg_saved_ok == true) {
+			/* Is this dai for I2Sv5? (I2S0) */
+			if (dai->id == 0) {
+				writel(i2s->suspend_audss_clksrc,
+						S5P_CLKSRC_AUDSS);
+				writel(i2s->suspend_audss_clkdiv,
+						S5P_CLKDIV_AUDSS);
+				writel(i2s->suspend_audss_clkgate,
+						S5P_CLKGATE_AUDSS);
+			}
+			writel(i2s->suspend_iismod, i2s->regs + S3C2412_IISMOD);
+			writel(i2s->suspend_iiscon, i2s->regs + S3C2412_IISCON);
+			writel(i2s->suspend_iispsr, i2s->regs + S3C2412_IISPSR);
+			writel(i2s->suspend_iisahb, i2s->regs + S5P_IISAHB);
+			reg_saved_ok = false;
+		}
+	}
+        ...
+}
+
+static int s5p_i2s_resume(struct snd_soc_dai *dai)
+{
+        ...
+	if (reg_saved_ok != true) {
+		if (dai->id == 0) {
+			writel(i2s->suspend_audss_clksrc, S5P_CLKSRC_AUDSS);
+			writel(i2s->suspend_audss_clkdiv, S5P_CLKDIV_AUDSS);
+			writel(i2s->suspend_audss_clkgate, S5P_CLKGATE_AUDSS);
+		}
+		writel(i2s->suspend_iiscon, i2s->regs + S3C2412_IISCON);
+		writel(i2s->suspend_iismod, i2s->regs + S3C2412_IISMOD);
+		writel(i2s->suspend_iispsr, i2s->regs + S3C2412_IISPSR);
+		writel(i2s->suspend_iisahb, i2s->regs + S5P_IISAHB);
+	}
+        ...
+}
+
+[  106.301296] BUG: soft lockup - CPU#0 stuck for 61s! [WindowManagerPo:128]
+[  106.306611] Modules linked in:
+[  106.309642] 
+[  106.311119] Pid: 128, comm:      WindowManagerPo
+[  106.315717] CPU: 0    Not tainted  (2.6.35.7-g0b8e861-dirty #49)
+[  106.321707] PC is at __do_softirq+0x48/0x10c
+[  106.325942] LR is at irq_exit+0x4c/0xb4
+[  106.329758] pc : [<c0068814>]    lr : [<c0068ccc>]    psr: 28000113
+[  106.329771] sp : cae29f48  ip : cae29f88  fp : cae29f84
+[  106.341190] r10: c05f6eb0  r9 : 0000000a  r8 : c065cc40
+[  106.346391] r7 : 00000001  r6 : cae28000  r5 : c065cc84  r4 : 00000202
+[  106.352890] r3 : 00000000  r2 : cae28000  r1 : c05faacc  r0 : c05faacc
+[  106.359391] Flags: nzCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment user
+[  106.366496] Control: 10c5387d  Table: 3f190019  DAC: 00000015
+   ...
+[  107.205270] [<c004089c>] (show_regs+0x0/0x50) from [<c009ac30>] (softlockup_tick+0x12c/0x198)
+[  107.213732]  r4:cae29f00 r3:00000002
+[  107.217307] [<c009ab04>] (softlockup_tick+0x0/0x198) from [<c006efdc>] (run_local_timers+0x1c/0x20)
+[  107.226295]  r8:27551852 r7:cae29f00 r6:c05f8a30 r5:00000000 r4:cad5bb00
+[  107.232987] [<c006efc0>] (run_local_timers+0x0/0x20) from [<c006f010>] (update_process_times+0x30/0x50)
+[  107.242348] [<c006efe0>] (update_process_times+0x0/0x50) from [<c0087028>] (tick_sched_timer+0x90/0xc4)
+[  107.251685]  r5:00000069 r4:2a9c90f3
+[  107.255261] [<c0086f98>] (tick_sched_timer+0x0/0xc4) from [<c007de4c>] (__run_hrtimer.clone.23+0x74/0x13c)
+[  107.264857]  r7:00000267 r6:c0086f98 r5:c05f8578 r4:c05f8a30
+[  107.270509] [<c007ddd8>] (__run_hrtimer.clone.23+0x0/0x13c) from [<c007e828>] (hrtimer_interrupt+0x144/0x334)
+[  107.280369]  r6:c05f8578 r5:c05f8548 r4:cae28000 r3:2a9ba666
+[  107.286021] [<c007e6e4>] (hrtimer_interrupt+0x0/0x334) from [<c005076c>] (s5p_tick_timer_interrupt+0x48/0x58)
+[  107.295898] [<c0050724>] (s5p_tick_timer_interrupt+0x0/0x58) from [<c009b4b0>] (handle_IRQ_event+0x2c/0xe8)
+[  107.305604] [<c009b484>] (handle_IRQ_event+0x0/0xe8) from [<c009d12c>] (handle_level_irq+0xdc/0x188)
+[  107.314684]  r7:00000103 r6:c05f4aa0 r5:0000003d r4:c05faacc
+[  107.320333] [<c009d050>] (handle_level_irq+0x0/0x188) from [<c003e070>] (asm_do_IRQ+0x70/0x90)
+[  107.328896]  r6:00000002 r5:cae29fb0 r4:0000003d r3:c009d050
+[  107.334544] [<c003e000>] (asm_do_IRQ+0x0/0x90) from [<c003eb08>] (__irq_svc+0x48/0xc0)
+[  107.342418] Exception stack(0xcae29f00 to 0xcae29f48)
+[  107.347455] 9f00: c05faacc c05faacc cae28000 00000000 00000202 c065cc84 cae28000 00000001
+[  107.355600] 9f20: c065cc40 0000000a c05f6eb0 cae29f84 cae29f88 cae29f48 c0068ccc c0068814
+[  107.363735] 9f40: 28000113 ffffffff
+[  107.367199]  r5:fd000000 r4:ffffffff
+[  107.370767] [<c00687cc>] (__do_softirq+0x0/0x10c) from [<c0068ccc>] (irq_exit+0x4c/0xb4)
+[  107.378825] [<c0068c80>] (irq_exit+0x0/0xb4) from [<c003e074>] (asm_do_IRQ+0x74/0x90)
+[  107.386624] [<c003e000>] (asm_do_IRQ+0x0/0x90) from [<c003ed48>] (__irq_usr+0x48/0xc0)
+[  107.394497] Exception stack(0xcae29fb0 to 0xcae29ff8)
+[  107.399529] 9fa0:                                     002e73e0 afd46608 00000000 00000001
+[  107.407681] 9fc0: ad3806e0 002beb90 406a1d98 001f74a0 406a1d78 00000000 002beb90 800a5368
+[  107.415823] 9fe0: afd46474 467327e0 afd10d64 afc009e6 68000030 ffffffff
+[  107.422399]  r5:fd000000 r4:ffffffff
+
+现象:
+        E9开机不操作设备让其自动睡眠,5s钟后机器alarm唤醒,概率性出现BUG: soft lockup
+原因:
+        机器会在自动睡眠5s后alarm唤醒,接着会播放一个声音,出现bug的时候声音出不来,
+        这是由于android在唤醒后立刻播放声音造成i2s驱动在读写寄存器时造成竞争的.
+        dai的resume在所有进程唤醒后执行,但由于上层在唤醒后立刻播放声音,
+        所以引起了startup和resume两个函数概率性竞争.
+        至于soft lockup为何出现在tick timer interrupt中,原因就不得而知了.
+__==========__
+
+__==========__
+keys: sound, i2s, E8
+{{./image001(10-17-13-40-02).jpg}}
+现象:
+        E8播放音频偶尔会出现音频失真,表现为声音时大时小
+
+        另做了以下实验:
+        1、
+        把CPU并接两个Codec，当中一个Codec A 把通路配通后把IIC线路断开保证不会修改配置，只保留IIS数据通道。另一个Codec B保留IIC及IIS通道。
+        Codec A---IIS
+        Codec B---IIS & IIC
+        多次播放、停止900Hz.wav文件，B出现失真时A无输出。怀疑是IIS数据有异常，于是尝试在CPU端边播声音边录音。
+
+        2、
+        把CPU端IIS_ADC和IIS_DAC短接，Codec B端内部ADC通路及ADC电源关闭，多次播放、停止900Hz.wav，同时进行录音。
+        当Codec B端有失真时，录音文件也有同样的失真。下图为失真时的波形。CH1为BCLK，CH3为IIS_DAC，CH4为Codec SPK输出通过RC（100欧/47nF）滤波电路后所得波形。
+
+原因:
+        codec会根据LRCLK去取一帧数据,但cpu给出的LRCLK与数据不同步,因此codec获取到的一帧数据里包括了两帧数据的部分.
+__==========__
+
+__==========__
+keys: matrix-keypad repeat android F63
+现象:
+	F63在idle模式时,按一下按键唤醒系统,应用层认为连按了两下
+	从内核层面分析,发现内核确实只报了一次键值
+	分析android输入框架(framework/base/libs/ui/Input*),发现输入框架收到的按键UP和按键DOWN时间间隔太长,
+	大概是600ms,而输入框架定义了只要超过500ms就会开始repeat-report (frameworks/base/services/jni/com_android_server_InputManager.cpp)
+	在内核里定义的扫描间隔是20ms,所以UP和DOWN的间隔最小也可以达到20ms,但从log可以看出UP和DOWN的间隔被延长到了600ms.
+原因:
+	matrix-keypad驱动使用的是公共的workqueue,调度的间隔只能保证不小于要求的值,而在唤醒过程中公共的workqueue可能被某个work阻塞住了,导致时间被延长.
+	所以使用独立的workqueue可以解决这个问题.
+	其实正常来说,android在非on状态下是禁止键值的repeat-report的,但在rk2906sdk里仅是把mem改成了standby,至于idle,android并不认为是非on状态.

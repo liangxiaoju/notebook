@@ -1,0 +1,40 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-02-11T12:00:14+08:00
+
+====== map ======
+Created 星期六 11 二月 2012
+
+按键映射
+
+nmap ：映射一个Normal模式下的键，只有在Normal模式这个命令才会生效。
+
+例：nmap ,s :source $VIM/_vimrc<cr>
+
+说明：绑定“,s”在Normal模式下映射为“:source $VIM/_vimrc<cr>”命令，即重新读取配置文件_vimrc 。
+
+imap ：映射一个Insert 模式下的键，只有在Insert 模式这个命令才会生效。
+
+例：imap <F11> :r c:\boot.ini<cr>
+
+说明：绑定F11在Insert 模式下的映射为“:r c:\boot.ini<cr>”命令，即读取c:\boot.ini文件到当前位置。
+
+vmap ：映射一个Visual模式下的键，只有在Visual模式这个命令才会生效。
+
+例：vmap sb "zbi<b><c-r>z</b><ESC>
+
+说明：选中文字后按sb，选中文字的前后将分别加上<b>和</b>。
+
+再例：vmap g/ y/<c-r>"<cr>
+
+说明：映射“g/”这个组合键匹配选中的字并给予高亮显示。
+
+map ：用map绑定的键对Normal, Insert, Visual和Command-line模式均有效。
+
+例：map <F5> :ls<cr>:e # 
+
+noremap ：让被映射的键不再被递归式的映射
+
+例：
+nnoremap <cr> o
+nnoremap <F12> <cr>

@@ -1,0 +1,38 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-11-29T09:52:37+08:00
+
+====== wifi ======
+Created 星期六 29 十一月 2014
+
+# use our own variable
+local_dir := $(call my-dir)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := wifi_res
+LOCAL_MODULE_TAGS := optional
+LOCAL_REQUIRED_MODULES :=
+include $(BUILD_PHONY_PACKAGE)
+
+_wifi_bin_files := $(patsubst ./%,%, $(shell cd $(local_dir) && find . -name "*supplicant" -or -name "*hostapd"))
+_wifi_ko_files := $(patsubst ./%,%, $(shell cd $(local_dir) && find . -name "*.ko"))
+
+remove_wifi_files:
+	@echo "remove"
+#	$(foreach m, $(_wifi_bin_files), $(shell rm -f $(TARGET_OUT)/bin/$(m)))
+#	$(shell rm -f $(TARGET_ROOT_OUT)/init.connectivity.rc)
+	@for m in $(_wifi_bin_files); do rm -vf "$(TARGET_OUT)/bin/$$m"; done
+	@for m in $(_wifi_ko_files); do rm -vf "$(TARGET_OUT)/lib/modules/$$m"; done
+	@rm -vf $(TARGET_ROOT_OUT)/init.connectivity.rc
+
+copy_wifi_files:
+	@echo "copy"
+#	$(foreach m, $(_wifi_bin_files), $(shell cp -f $(local_dir)/$(m) $(TARGET_OUT)/bin/$(m)))
+#	$(shell cp -f $(local_dir)/init.connectivity.rc $(TARGET_ROOT_OUT)/init.connectivity.rc)
+	@for m in $(_wifi_bin_files); do cp -vf $(local_dir)/$$m $(TARGET_OUT)/bin/$$m; done
+	@for m in $(_wifi_ko_files); do cp -vf $(local_dir)/$$m $(TARGET_OUT)/lib/modules/$$m; done
+	@cp -vf $(local_dir)/init.connectivity.rc $(TARGET_ROOT_OUT)/init.connectivity.rc
+
+$(LOCAL_BUILT_MODULE): remove_wifi_files
+
+$(LOCAL_INSTALLED_MODULE): copy_wifi_files

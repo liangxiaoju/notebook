@@ -1,0 +1,12 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-10-31T09:06:37+00:00
+
+====== 星期一 31 10月 2011 ======
+
+1、wifi suspend/resume
+2、mid capacity display
+3、ebook sound system ‘s pop
+4、mid framebuffer RGB666
+5、too long to resume
+6、

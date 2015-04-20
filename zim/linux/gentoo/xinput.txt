@@ -1,0 +1,34 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-12-17T09:22:39+08:00
+
+====== xinput ======
+Created 星期一 17 十二月 2012
+
+TAGS: xinput, multi-focus
+
+配置X下的输入设备
+
+== usage ==
+--list [device]
+--list-props device
+	显示device的信息
+--query-state device
+	显示device当前状态
+--create-master prefix
+--remove-master master
+	创建/删除一个焦点
+--reattach slave master
+	将slave设备添加到master中
+--float slave
+	将slave设备从当前master中移除
+--test device
+	显示设备事件
+--enable/disable device
+	enable/disable设备
+--map-to-output device crtc
+	将绝对坐标设备限制在某一特定output中
+
+== see also ==
+man xinput
+man xrandr

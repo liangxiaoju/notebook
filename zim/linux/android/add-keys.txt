@@ -1,0 +1,36 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2013-08-23T12:59:54+08:00
+
+====== add-keys ======
+Created 星期五 23 八月 2013
+
+android 添加按键
+
+** qwerty.kl **
+添加硬件扫描码到按键名的映射
+key 158 BACK
+
+** frameworks/base/include/ui/KeycodeLabels.h **
+添加按键名到应用层键值的映射
+static const KeycodeLabel KEYCODES[] = {
+       ......
+       {"BACK", 4},
+       ......
+};
+
+** frameworks/base/core/res/res/values/attrs.xml **
+添加应用层全局变量到按键键值的映射
+<!-- This enum provides the same keycode values as can be found in
+     {@link android.view.KeyEvent}. -->
+  <attr name="keycode">
+  ......
+  <enum name="KEYCODE_BACK" value="4" />
+  ...
+
+** frameworks/base/core/java/android/view/KeyEvent.java **
+添加应用层全局变量到按键键值的映射
+public static final int KEYCODE_BACK = 4;
+
+然后应用层就已经可以在 dispatchKeyEvent() 或 onKeyUp()/onKeyDown() 中通过
+KeyEvent 的 getKeyCode() 获取到新添按键的键值了。

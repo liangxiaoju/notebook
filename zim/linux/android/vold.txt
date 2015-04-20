@@ -1,0 +1,30 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-09-17T09:37:52+08:00
+
+====== vold ======
+Created 星期一 17 九月 2012
+
+tags: vold, sdcard
+
+sdcard 挂载流程:
+
+mount (system,sdcard_rw):
+      sdcard --> /mnt/secure/staging
+
+kill:
+        杀掉所有打开"staging/autorun.inf"文件的进程
+
+rename:
+        /mnt/secure/staging/android_secure --> /mnt/secure/staging/.android_secure
+        如果不存在就新建;如果android_secure不是文件夹将不能挂载.
+
+bind (root):
+     /mnt/secure/staging/.android_secure --> /mnt/secure/asec
+
+mount (root):
+      tmpfs --> /mnt/secure/staging/.android_secure
+      掩盖.android_secure下的内容
+
+move (system,sdcard_rw):
+     /mnt/secure/staging --> /sdcard

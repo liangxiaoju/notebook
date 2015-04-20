@@ -1,0 +1,73 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2013-11-07T10:32:16+08:00
+
+====== intercept-keys ======
+Created 星期四 07 十一月 2013
+TAGS: intercept, android
+
+一、前沿
+    我们在做应用程序的时候，可能有这样的需求：
+    音量加减按键用做翻页功能，而不调节音量。或者菜单键不用于显示菜单，而用于弹出一个对话框。
+    这些需求就需要我们在应用里自定义这些按键的处理，而不让系统去处理。这里就记录如何实现这样的需求。
+    截获系统按键的实现方式分为两种，一种是普通系统按键（如 back 、menu），一种是特殊系统按键（如 home），下面分别说明。
+ 
+二、普通系统按键的截获方式
+以处理 back 键为例，
+在Activity里重载 public boolean dispatchKeyEvent(KeyEvent event) 方法，判断键值，如果是KeyEvent.KEYCODE_BACK则返回 true，代码如下：
+'''
+@Override
+public boolean dispatchKeyEvent(KeyEvent event) {
+    int key = event.getKeyCode();
+    int keyaction = event.getAction();
+    //Log.i(TAG, "[test] dispatchKeyEvent  event = " + event);
+    if (key == KeyEvent.KEYCODE_BACK ) {
+        Log.i(TAG, " catch BACK event!! keyaction: "+keyaction);
+        if(keyaction==0){
+            //处理 back键按下
+
+        }
+        if(keyaction==1){
+            //处理 back 键弹起
+
+        }
+
+        return true;
+    }
+
+    return super.dispatchKeyEvent(event);
+}
+
+'''
+三、特殊系统按键的截获方式
+以home键为例，实现步骤如下：
+
+1.在AndroidManifest.xml 里添加权限
+'''
+<uses-permission android:name="android.permission.DISABLE_KEYGUARD"></uses-permission>
+'''
+
+2.在Activity里重载 public void onAttachedToWindow() ，设置参数让系统不处理home键，代码如下：
+'''
+@Override  
+public void onAttachedToWindow()  
+{  
+    // TODO Auto-generated method stub  
+    this.getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD);     
+    super.onAttachedToWindow();  
+}
+'''
+3.自定义按键处理，重载onKeyDown 、onKeyUp 方法，例如处理弹起动作：
+'''
+public boolean onKeyUp(int keyCode, KeyEvent event)
+{
+    switch(keyCode)
+    {
+        case KeyEvent.KEYCODE_HOME:
+            //处理home键弹起
+            Log.d(TAG,"HOME key up test!");
+            break;
+    }
+    return super.onKeyUp(keyCode, event);
+}
+'''

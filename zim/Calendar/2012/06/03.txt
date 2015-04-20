@@ -1,0 +1,11 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-06-03T12:55:08+08:00
+
+====== 星期日 03  6月 2012 ======
+
+TAGS: DNS
+
+bind tools: dig, nslookup, host, nsupdate, dnssec-keygen
+
+可以用来查域名的IP

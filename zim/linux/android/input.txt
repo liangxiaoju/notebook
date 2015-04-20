@@ -1,0 +1,41 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2013-04-13T14:21:14+08:00
+
+====== input ======
+Created 星期六 13 四月 2013
+
+相关配置文件：
+
+res config:
+	frameworks/base/core/res/res/values/config.xml
+
+key layout files:
+	/system/usr/keylayout/Vendor_XXXX_Product_XXXX_Version_XXXX.kl
+	/system/usr/keylayout/Vendor_XXXX_Product_XXXX.kl
+	/system/usr/keylayout/DEVICE_NAME.kl
+	/data/system/devices/keylayout/Vendor_XXXX_Product_XXXX_Version_XXXX.kl
+	/data/system/devices/keylayout/Vendor_XXXX_Product_XXXX.kl
+	/data/system/devices/keylayout/DEVICE_NAME.kl
+	/system/usr/keylayout/Generic.kl
+	/data/system/devices/keylayout/Generic.kl
+
+key character map files:
+	/system/usr/keychars/Vendor_XXXX_Product_XXXX_Version_XXXX.kcm
+	/system/usr/keychars/Vendor_XXXX_Product_XXXX.kcm
+	/system/usr/keychars/DEVICE_NAME.kcm
+	/data/system/devices/keychars/Vendor_XXXX_Product_XXXX_Version_XXXX.kcm
+	/data/system/devices/keychars/Vendor_XXXX_Product_XXXX.kcm
+	/data/system/devices/keychars/DEVICE_NAME.kcm
+	/system/usr/keychars/Generic.kcm
+	/data/system/devices/keychars/Generic.kcm
+	/system/usr/keychars/Virtual.kcm
+	/data/system/devices/keychars/Virtual.kcm
+
+input device configuration files:
+	/system/usr/idc/Vendor_XXXX_Product_XXXX_Version_XXXX.idc
+	/system/usr/idc/Vendor_XXXX_Product_XXXX.idc
+	/system/usr/idc/DEVICE_NAME.idc
+	/data/system/devices/idc/Vendor_XXXX_Product_XXXX_Version_XXXX.idc
+	/data/system/devices/idc/Vendor_XXXX_Product_XXXX.idc
+	/data/system/devices/idc/DEVICE_NAME.idc

@@ -1,0 +1,52 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-09-26T14:45:53+08:00
+
+====== feh ======
+Created 星期三 26 九月 2012
+
+**feh **is a CLI-based X11 image viewer. Unlike most other viewers, it does
+	not have any fancy GUI, but simply displays images. It is controlled via commandline arguments and keyboard/mouse actions.
+	
+
+==== Usage ====
+	**放大**
+		<//Up//>键 或 鼠标中键向右拖曳
+
+	**缩小**
+		<//Down//>键 或 鼠标中键向左拖曳
+
+	**旋转**
+		'//<//' '//>//' 键,对图像文件生效。<//C-Botton2//> 不对图像文件生效
+		<//C-Button2//> 按住中键左右移动可左转与右转。
+
+	**浏览图像时显示文件名**
+		'd'
+	
+	**feh -t -E 240 -y 240 /usr/share/pixmaps/ **
+		显示240x240的索引图像。点击索引图像在新窗口打开原图. 'x' 关闭图像窗口。
+
+	**feh -l /usr/share/pixmaps/ **
+		在终端下列出图像信息
+
+	**feh --info "exifgrep '(Model|DateTimeOriginal|FNumber|ISO|Flash)' '%f' | cut -d . -f 4-" . **
+		在浏览图像时同时显示exif信息。
+
+	**feh -FD5 -Sname /opt/images/presentation**
+		以幻灯片浏览图像
+
+	**feh -A 'printf %f' *.png**
+		查看当前目录下的png图片，'//Enter//' 或 '//0//' 键将执行自定义命令。通过 --action1 ... --action9 可同时自定义9个命令。**Killer Trick**
+
+	**按缩放比例浏览**
+	// $ feh -g 800x600 pic.jpg // 			// 以特定的分辨率打开图片。
+	// $ feh -g 1680x1050 --zoom 20% *.jpg //	// --zoom 只有在 全屏或指定分辨率下才使用。
+	// $ feh -Z *.jpg //	// 自动适应屏幕分辨率浏览图片, 全屏时有效。
+	// v // 键	全屏
+
+	feh 的定制性很好，通过 __ ~/.config/feh/keys __ 可定制默认的快捷键
+
+
+==== See Also ====
+	* $ man feh
+

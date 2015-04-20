@@ -1,0 +1,28 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-04-24T10:56:33+08:00
+
+====== ebuild ======
+Created 星期四 24 四月 2014
+
+ebuild - a low level interface to the Portage system
+
+* ebuild 分步编译
+'''ebuild your-ebuild-file unpack/prepare/configure/compile/install/qmerge'''
+
+* ebuild 打包
+'''ebuild your-ebuild-file package'''
+or
+'''emerge xxx --buildpkg'''
+and find *.tbz2 in /usr/portage/packages/
+
+* ebuild 修改
+修改完之后需要重新签名 '''ebuild your-ebuild-file digest'''
+
+* 修改配置参数
+通过ebuild的变量EXTRA_ECONF可以改变软件包./configure时的参数
+'''EXTERA_ECONF="--enable-static" emerge xxx'''
+
+* see also
+    man 1 ebuild
+    man 5 ebuild

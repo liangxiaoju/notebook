@@ -1,0 +1,13 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-02-29T22:52:58+08:00
+
+====== TL-WR840N ======
+Created 星期三 29 二月 2012
+TAGS: TPLINK, MAC
+
+可用的MAC地址:
+00-21-27-27-EE-77
+
+上网帐号: 075500484563@163.gd
+上网口令: Hello123World

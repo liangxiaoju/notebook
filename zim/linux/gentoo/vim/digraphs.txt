@@ -1,0 +1,57 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-12-05T09:39:00+08:00
+
+====== digraphs ======
+Created 星期一 05 十二月 2011
+
+TAGS: vim
+
+	在vim中输入不可打印的 Unicode 字符.
+
+
+==== Usage ====
+** 查看符号 **
+	'':digraphs''
+
+** 输入符号 **
+	''CTRL+K char1''
+
+
+==== 常用的符号 ====
+	''digraph	char1''
+	''→''	->
+	''←''	<-
+	''↓''	-v
+	''↑''	-!
+	''↔''	<>
+	''↕''	UD
+	''⇒''	=>
+	''√''	RT
+	''✓''	OK
+	''©''	cO
+	''$''	DO
+	''※''	:X
+	''☺''	0u
+	''☻''	0U
+	''☆''	*1
+	''★''	*2
+	''☜''	<H
+	''☞''	>H
+	''♫''	M2
+	''♪''	M8
+	''♠''	cS
+	''♡''	cH
+	''♢''	cD
+	''♣''	cC
+	''α''	*a
+	''β''	*b
+	''γ''	*g
+	''⅔''	23
+	''½''	12
+	'':help digraphs'' 可更轻易的查找需要的符号
+
+
+==== See Also ====
+	* '':help digraphs''
+

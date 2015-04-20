@@ -1,0 +1,57 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2013-08-21T14:04:03+08:00
+
+====== cross-compile ======
+Created 星期三 21 八月 2013
+
+1.
+mkdir build.x86 && cd build.x86
+
+../configure
+
+可能需要修改Makefile:
+$(PGEN):    $(PGENOBJS) Parser/grammar.o Parser/metagrammar.o Parser/tokenizer_pgen.o Parser/pgenmain.o
+              $(CC) $(OPT) $(LDFLAGS) $(PGENOBJS) $(LIBS) -o $(PGEN)
+make Parser/pgen
+生成x86版本的pgen语法解释器
+
+
+2.
+mkdir build.arm && cd build.arm
+cat <<EOF > config.site
+ac_cv_file__dev_ptmx=no
+ac_cv_file__dev_ptc=no
+EOF
+
+CONFIG_SITE=config.site CC=arm-imt-linux-gnueabi-gcc \
+CXX=arm-imt-linux-gnueabi-g++ ../configure \
+--host=arm-imt-linux-gnueabi --build=x86_64-unknown-linux-gnu \
+--prefix=/tmp/python2.7/ --disable-ipv6 --enable-shared
+
+make 出错
+cp ../build.x86/Parser/pgen Parser/
+make
+
+可能修改Makefile
+compileall.py 用于生成.pyc .pyo文件，所以在x86上不能运行，
+-PYTHONPATH=$(DESTDIR)$(LIBDEST)  $(RUNSHARED) \
+            $(PYTHON_FOR_BUILD) -Wi -tt
+            $(DESTDIR)$(LIBDEST)/compileall.py \
+                -d $(LIBDEST) -f \
+                -x
+                'bad_coding|badsyntax|site-packages|lib2to3/tests/data'
+                \
+    $(DESTDIR)$(LIBDEST)
+-PYTHONPATH=$(DESTDIR)$(LIBDEST)
+    $(RUNSHARED) \
+        $(PYTHON_FOR_BUILD) -Wi -tt -O
+        $(DESTDIR)$(LIBDEST)/compileall.py \
+            -d $(LIBDEST) -f \
+            -x
+            'bad_coding|badsyntax|site-packages|lib2to3/tests/data'
+            \
+                $(DESTDIR)$(LIBDEST)
+加入‘-’略过这个编译的出错
+
+make install

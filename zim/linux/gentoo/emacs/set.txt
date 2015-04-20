@@ -1,0 +1,29 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-11-17T10:40:41+08:00
+
+====== set ======
+Created 星期一 17 十一月 2014
+
+** set **
+(set symbol value)
+1. 对symbol进行运算
+2. 把value赋给symbol的运算结果
+
+** setq **
+(setq symbol value)
+1. 直接把value赋给symbol
+
+eg.
+1.
+(set 'flowers "hello")
+把字符串"hello"赋给变量flowers
+(set flowers "xxxx")
+错误, flowers的运算结果是"hello", 把字符串"xxxx"赋给另一个字符串"hello"肯定是错误的.
+
+2.
+(setq 'flowers "hello")
+把字符串"hello"赋给变量flowers
+(setq 'flowers "xxxx")
+把字符串"xxxx"赋给变量flowers
+

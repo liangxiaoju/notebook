@@ -1,0 +1,39 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-04-29T15:53:22+08:00
+
+====== lockups ======
+Created 星期二 29 四月 2014
+
+
+{{./lockups.png}}
+
+
+**priority**
+    kthread(high priority thread) < hrtimer(maskable interrupt) < NMI(non maskable interrupt)
+
+**soft lockup**
+    * kthread不断调度更新watchdog_touch_ts时间
+    * hrtimer定期检查watchdog_touch_ts, 如果watchdog_touch_ts长时间不更新, 则认为kthread出现soft lockup
+
+'''
+/* check for a softlockup
+ * This is done by making sure a high priority task is
+ * being scheduled.  The task touches the watchdog to
+ * indicate it is getting cpu time.  If it hasn't then
+ * this is a good indication some task is hogging the cpu
+ */
+'''
+
+**hard lockup**
+    * hrtimer定期累加hrtimer_interrupts计数器
+    * NMI中断定期检查hrtimer_interrupts, 如果hrtimer_interrupts没变化, 则认为hrtimer被屏蔽的时间太长导致hard lockup
+
+'''
+/* check for a hardlockup
+ * This is done by making sure our timer interrupt
+ * is incrementing.  The timer interrupt should have
+ * fired multiple times before we overflow'd.  If it hasn't
+ * then this is a good indication the cpu is stuck
+ */
+'''

@@ -1,0 +1,32 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-02-27T17:03:15+08:00
+
+====== declare ======
+Created 星期一 27 二月 2012
+
+TAGS: bash
+bash: declare,typeset
+
+== usage: declare [-aAfFgilrtux] [-p] [name[=value] ...] ==
+
+declare/typeset内建命令可以允许指定变量的类型。
+
+**-r: 只读**
+	declare -r var  ==  readonly var
+
+**-i: 整型**
+	declare -i n=6/3
+	如果把一个变量指定为整型的话，即使没有expr或let命令，也允许使用特定的算术运算
+
+**-a: 数组**
+	declare -a array
+
+**-f: 函数**
+	declare -f func
+	列出这个函数的定义
+
+**-x: 导出为环境变量**
+	declare -x var=xxx
+
+using '+' instead of '-' turns off the attribute instead.

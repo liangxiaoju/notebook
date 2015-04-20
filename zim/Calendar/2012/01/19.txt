@@ -1,0 +1,8 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-01-19T10:15:54+08:00
+
+====== 星期四 19  1月 2012 ======
+
+ssh -f -N -D 7070 lxjsky@216.194.70.6 (shell.cjb.com)
+lxjsky851028

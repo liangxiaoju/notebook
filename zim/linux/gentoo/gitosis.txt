@@ -1,0 +1,152 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-11-26T09:14:17+08:00
+
+====== gitosis ======
+Created 星期六 26 十一月 2011
+
+==== 使用 gitosis 管理 git 服务器 ====
+
+通过apt安装，gitosis使用SSH key来认证用户，但用户不需要在主机上添加账号，而是使用服务器上的一个受限账号。 安装的过程需要在客户端和服务器之间切换，留意操作步骤之前的说明。
+
+服务器端(ip:192.168.1.254)
+1. 安装 git
+sudo apt-get install git-core
+
+2. 安装  python 和 python-setuptools
+sudo apt-get install python python-setuptools
+
+3. 安装gitosis
+
+cd /tmp
+sudo git clone git://eagain.net/gitosis
+cd gitosis
+sudo python setup.py install
+
+4. 创建git用户
+
+sudo adduser \
+    --system \
+    --shell /bin/sh \
+    --gecos 'git user' \
+    --group \
+    --disabled-password \
+    --home /home/git \
+    git
+
+客户端(也需要先安装 git)
+5. 在 gitosis 管理员的机器上生成 密钥，把公钥重命名为comet@3GCOMET.pub，这里用scp传到服务器上
+ssh-keygen -t rsa
+mv id_rsa.pub comet@3GCOMET.pub
+scp comet@3GCOMET.pub comet@192.168.1.254:comet@3GCOMET.pub
+
+6.在 ~/.ssh/config 添加以下内容，以便连接到服务器
+Host 192.168.1.254
+Compression yes
+IdentityFile ~/.ssh/id_rsa
+
+服务器端
+7.使用上面的 comet@3GCOMET.pub 初始化 gitosis
+sudo -H -u git gitosis-init < comet@3GCOMET.pub
+sudo chmod 755 /home/git/repositories/gitosis-admin.git/hooks/post-update
+
+客户端
+8.获取服务器上的 gitosis-admin 项目，会有keydir 文件夹和gitosis.conf
+git clone git@192.168.1.254:gitosis-admin.git
+
+9.添加新组jichuteam、用户comet@HP、项目jichu，并推送到远程服务器
+在新的客户端生成密钥，并把公钥放到 gitosis-admin\keydir ，这里是comet@HP.pub
+cd gitosis-admin
+vi gitosis.conf
+修改为下面内容，其中[gitosis]可以看gitosis/example.conf的说明，members 的 comet@HP 就是 comet@HP.pub 的文件名，多个用户用空格隔开
+[gitosis]
+gitweb = no
+daemon = no
+loglevel = DEBUG
+
+[group gitosis-admin]
+writable = gitosis-admin
+members = comet@3GCOMET
+
+[group jichuteam]
+members = comet@HP
+writable = jichu
+
+git push
+
+10.到其他地方建立项目根目录，并设置默认用户和邮箱，在.git/config添加远程服务器URL
+mkdir jichu
+cd jichu
+git init
+git config user.name Comet
+git config user.email iamcomet@3gcomet.com
+git remote add origin git@192.168.1.254:jichu.git
+
+11.在 jichu 目录下进行开发，这里新建了 log.txt（一定要有新文件），提交到index，加上"initial import"信息并提交到本地仓库，最后是推送到远程服务器。
+echo "begin develop" > log.txt
+git add .
+git commit -a -m "initial import"
+git push origin master
+
+服务器端
+12.在服务器的 /home/git/repositories/ 可以看到有 jichu.git 的版本库。
+
+
+
+
+
+
+
+==== gitosis ====
+
+=== install gitosis ===
+on server:
+git clone git://eagain.net/gitosis
+cd gitosis && sudo python setup.py install
+
+=== setting up ===
+on server:
+
+== add a user ==
+sudo useradd --system --shell /bin/sh --comment 'git version control' \
+	     --home /usr/local/git git
+
+== generate ssh key ==
+on client:
+ssh-keygen -t rsa
+it will generate id_rsa id_rsa.pub in ~/.ssh/
+then copy id_rsa.pub to server (scp)
+
+== gitosis-init ==
+on server:
+sudo -H -u git gitosis-init < id_rsa.pub
+sudo chmod 755 gitosis-admin.git/hooks/post-update
+
+== get gitosis ==
+on client:
+git clone git@SERVER:gitosis-admin.git
+and you will get gitosis.conf and keydir/USER@HOSTNAME.pub
+modify the gitosis-admin.git and push changes to repository
+once you push, gitosis will immediately make your changes take effect on the
+server.
+
+== manage ==
+
+= add user =
+on server:
+add a ``keydir/USER@HOSTNAME.pub`` file
+
+= add project =
+
+on server:
+[group myteam]
+members = USER
+writable = myproject
+
+on client:
+mkdir myproject && cd myproject
+git init
+git remote add myserver git@MYSERVER:myproject.git
+# do some work, git add and commit files
+git push myserver master:refs/heads/master
+

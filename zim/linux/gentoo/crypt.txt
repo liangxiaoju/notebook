@@ -1,0 +1,10 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-27T13:08:55+08:00
+
+====== crypt ======
+Created 星期五 27 四月 2012
+
+ccrypt
+arc4 → [[./arc4-crypt.c]]
+xor → [[./xor-enc.c]]

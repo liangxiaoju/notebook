@@ -1,0 +1,33 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-11-30T15:31:44+08:00
+
+====== command ======
+Created 星期三 30 十一月 2011
+
+add a uboot command
+
+增加一个cmd_*.c文件，如果该命令与board相关，则放在board/<board_dir>目录下，
+如果是通用命令，则放在common目录下。
+
+在cmd_*.c文件中定义一个命令：
+
+U_BOOT_CMD(
+	cmd, maxargs, repeatable, do_cmd_func,
+	"usage\n",
+	"longhelp"
+);
+cmd:命令名
+maxargs:最大参数个数
+repeatable:按Enter键时是否自动重复
+do_cmd_func:响应函数
+
+
+do_cmd_func函数如下：
+int do_cmd_func(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	/* do what you want */
+	return 0;
+}
+
+

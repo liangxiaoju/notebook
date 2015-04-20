@@ -1,0 +1,37 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-02-18T15:46:53+08:00
+
+====== decompile ======
+Created 星期二 18 二月 2014
+
+TAGS: 反编译
+
+dex2jar: 将android apk的.dex文件转换成.jar文件, .jar其实就是将一堆.class文件通过zip方式打包得来
+jd-gui: 显示.class文件的java源码的图形工具
+apktool: 用来打包,解包和反编译apk的工具
+aapt: android assert packaging tool
+
+== 获取apk源码 ==
+* 'unzip -x org.apk -d org' 得到classes.dex文件
+* 'd2j-dex2jar.sh classes.dex -o org.src.jar'
+* 'jd-gui org.src.jar' 打开jd-gui,然后在File->Save All Sources,得到源码只能作为参考
+
+== 修改apk ==
+* 'java -jar apktool.jar decode -o org/ org.apk' "-d"可以让解出来的源码文件的后缀变成.java
+* 修改.smali字节码/修改资源文件
+* 'java -jar apktool.jar build -o org-debug.apk org/' 生成修改后的apk
+* 'java -jar signapk.jar testkey.x509.pem testkey.pk8 org-debug.apk org-debug-signed.apk' 对修改后的apk签名
+
+== Note ==
+apktool.jar:
+    V2.*使用java 1.7
+    V1.*使用java 1.6
+
+== Files ==
+[[./dex2jar-0.0.9.15.zip]] 
+[[./jd-gui-0.3.5.linux.i686.tar.gz]] 
+[[./apktool_2.0.0b9.jar]] 
+[[./signapk.jar]] 
+[[./testkey.x509.pem]] 
+[[./testkey.pk8]] 

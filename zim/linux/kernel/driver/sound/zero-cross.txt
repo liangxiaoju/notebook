@@ -1,0 +1,18 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-11-08T16:14:37+00:00
+
+====== zero-cross ======
+Created 星期二 08 十一月 2011
+
+zero cross 就是只在音频信号经过零点时执行mute/unmute或者改变音量的操作，
+这样可以避免pop噪音。
+
+zero cross enable
+
+{{./1.jpeg}}
+
+
+
+zero cross disable
+{{./2.jpeg}}

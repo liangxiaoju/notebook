@@ -1,0 +1,58 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2013-10-15T14:32:06+08:00
+
+====== vdc ======
+Created 星期二 15 十月 2013
+
+dump:
+vdc dump
+
+volume:
+vdc volume list
+    list volumes
+vdc volume mount <path>
+    mount volume
+vdc volume unmount <path> [force|force_and_revert]
+    force -- force umount
+    revert -- undo the crypto mapping
+vdc volume share <path> <method>
+vdc volume unshare <path> <method>
+vdc volume shared <path> <method>
+    method -- 'ums'
+
+storage:
+vdc storage users
+    list storage user
+
+asec:
+vdc asec list
+vdc asec create <container-id> <size_mb> <fstype> <key> <ownerUid> <isExternal>
+vdc asec finalize <container-id>
+vdc asec fixperms <container-id> <gid> <filename>
+vdc asec destroy <container-id> [force]
+vdc asec mount <namespace-id> <key> <owerUid>
+vdc asec unmount <container-id> [force]
+vdc asec rename <old_id> <new_id>
+vdc asec path <container-id>
+vdc asec fspath <container-id>
+
+obb:
+vdc obb list
+vdc obb mount <filename> <key> <ownerGid>
+vdc obb unmount <sourcefile> [force]
+vdc obb path <sourcefile>
+
+xwarp:
+vdc xwarp enable
+vdc xwarp disable
+vdc xwarp status
+
+cryptfs:
+vdc cryptfs checkpw <passwd>
+vdc cryptfs restart
+vdc cryptfs cryptocomplete
+vdc cryptfs enablecrypto <wipe|inplace> <passwd>
+vdc cryptfs changepw <newpasswd>
+vdc cryptfs verifypw <passwd>
+

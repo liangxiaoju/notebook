@@ -1,0 +1,10 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-12-08T17:30:46+08:00
+
+====== proxy ======
+Created 星期一 08 十二月 2014
+
+proxychains
+
+nc -x127.0.0.1:8080 -X5 www.twitter.com 8080

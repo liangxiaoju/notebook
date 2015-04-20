@@ -1,0 +1,7 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2013-04-17T14:56:55+00:00
+
+====== memo ======
+Created 星期三 17 四月 2013
+

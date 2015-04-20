@@ -1,0 +1,14 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-01-12T09:33:33+08:00
+
+====== 星期四 12  1月 2012 ======
+
+TODO:
+	new u-boot
+	android
+		socket
+		vold
+		recovery
+		fastboot
+	uboot logo

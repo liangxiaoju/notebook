@@ -1,0 +1,95 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-07-11T14:57:45+08:00
+
+====== dokuwiki ======
+Created 星期五 11 七月 2014
+
+== install php ==
+* ensure apache php module install
+'''
+=dev-lang/php-5.5.14 -cjk -truetype fpm apache2
+>=app-admin/eselect-php-0.7.1-r3 fpm apache2
+'''
+emerge php
+
+== install dokuwiki ==
+emerge dokuwiki
+
+* ensure apache group has writable at "dokuwiki/conf" directory
+'chmod g+w /var/www/localhost/htdocs/dokuwiki/conf'
+
+== config apache ==
+add "-D PHP5" to APACHE2_OPTS in "/etc/conf.d/apache2"
+
+'/etc/apache2/modules.d/70_mod_php5.conf' generated automatically
+'''
+<IfDefine PHP5>
+	# Load the module first
+	<IfModule !mod_php5.c>
+		LoadModule php5_module    modules/libphp5.so
+	</IfModule>
+
+	# Set it to handle the files
+	<IfModule mod_mime.c>
+		AddHandler application/x-httpd-php .php .php5 .phtml
+		AddHandler application/x-httpd-php-source .phps
+	</IfModule>
+
+	DirectoryIndex index.php index.phtml
+</IfDefine>
+'''
+
+add a new file '/etc/apache2/vhosts.d/dokuwiki_vhost.conf'
+'''
+Listen 80
+ServerName localhost
+
+<VirtualHost *:80>
+	DocumentRoot "/var/www/localhost/htdocs/"
+	<Directory "/var/www/localhost/htdocs/dokuwiki">
+		DirectoryIndex index.php index.html
+		Options Indexes FollowSymLinks
+		AllowOverride All
+		Require all granted
+	</Directory>
+</VirtualHost>
+'''
+
+== config dokuwiki ==
+check dokuwiki: 'http://localhost/dokuwiki/doku.php?do=check'
+install dokuwiki: 'http://localhost/dokuwiki/install.php'
+
+== misc ==
+we want to use following url to access dokuwiki and bugzilla:
+http://localhost/dokuwiki
+http://localhost/bugzilla
+
+that means we have to bind dokuwiki and bugzilla both on port 80.
+
+add
+'''
+AddHandler cgi-script .cgi
+
+<Directory "/var/www/localhost/htdocs/bugzilla">
+        DirectoryIndex index.cgi index.html
+        Options +FollowSymLinks +Indexes +ExecCGI
+        AllowOverride All
+        Require all granted
+</Directory>
+
+<Directory "/var/www/localhost/htdocs/dokuwiki">
+        DirectoryIndex index.php index.html
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted
+</Directory>
+'''
+to '/etc/apache2/vhosts.d/default_vhost.include'
+
+== other ==
+* apache 2.2
+    Order allow,deny
+    Allow from all
+* apache 2.4
+    Require all granted

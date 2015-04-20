@@ -1,0 +1,14 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-01-04T15:19:08+08:00
+
+====== 星期三 04  1月 2012 ======
+
+
+TODO:
+
+[ ] linux usb
+[ ] android recovery
+
+
+

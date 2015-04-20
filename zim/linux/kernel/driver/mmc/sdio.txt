@@ -1,0 +1,19 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-11-01T10:11:08+00:00
+
+====== sdio ======
+Created 星期二 01 十一月 2011
+
+    mmc bus                        sdio bus
+  /   |   \   \                 /      |        \
+mmc0 mmc1 mmc2 mm3     mmc3:0001:1  mmc3:0001:2  mmc3:0001:3
+                |
+                |              |       |          |
+                -----------------------------------
+
+
+sdio卡属于mmc bus下的一个device，而一个sdio卡可能含有多个sdio_func，
+每一个sdio_func都属于sdio bus下的一个device。
+如上，mmc bus下的mmc3设备是一张sdio卡，它含有mmc3:0001:1,mmc3:0001:2,
+mmc3:0001:3 这3个children sdio_func，而这些children又属于sdio bus。

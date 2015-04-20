@@ -1,0 +1,18 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-12-07T14:29:40+08:00
+
+====== 星期三 07 12月 2011 ======
+
+测试android源码中的wpa_supplicant
+
+通过readelf -d wpa_supplicant查出所依赖的动态库，把wpa_supplicant和wpa_cli以及所依赖的所有动态库copy到自己的文件系统上，同时要把android的加载器也copy出来。
+
+android-wpa要用到/data/misc/wifi/，所以要手动新建这个目录
+
+在板子上运行wpa，根据错误信息再复制其他依赖的库，当wpa_supplicant能运行时，可能会提示错误信息：
+unlink[ctrl_iface]: Permission denied
+这是因为android里编译出来的wpa是以1010作为uid和gid来运行的，解决办法是建立一个1010用户或者是chmod -R 777 [[/data/misc/wifi/]]
+
+运行wpa_cli时会出现 WPA: Failed to get random data for SNonce，这也是因为android-wpa没有权限操作/dev/urandom，
+so chmod 777 /dev/urandom

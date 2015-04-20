@@ -1,0 +1,21 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-07-24T09:39:29+08:00
+
+====== net-check ======
+Created 星期二 24 七月 2012
+
+TAGS: net
+
+1. mii-tool eth0
+	(mii-tool come from net-tools)
+	检查网线是否接好
+
+2. ping 192.168.0.1
+	ping 网关
+
+3. ping 8.8.8.8
+	ping 外网ip
+
+4. ping www.google.com
+	ping 外网域名

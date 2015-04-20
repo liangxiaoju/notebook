@@ -1,0 +1,67 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2013-05-14T16:46:57+08:00
+
+====== hid ======
+Created 星期二 14 五月 2013
+
+一般的usb空鼠会使用hid-input.c中通用的键值映射表，
+如果这个空鼠有自定义的按键或者是键值比较特殊，
+就需要给它添加一个独立的hid驱动。
+
+== 步骤 ==
+
+** 1. 添加usb设备的vid和pid **
+在 drivers/hid/hid-ids.h 中添加
+#define USB_VENDOR_ID_ZOOSTORM 0x1915
+#define USB_DEVICE_ID_ZOOSTORM 0xAF11
+
+** 2. 将设备加入hid_have_special_driver列表中 **
+在 drivers/hid/hid-core.c 的hid_have_special_driver[] 列表中增加这个usb设备
+出现在这个列表中的设备就不会使用通用键值映射表，而是使用自己的hid驱动，
+'''
+/* a list of devices for which there is a specialized driver on HID bus */
+static const struct hid_device_id hid_have_special_driver[] = {
+	... ...
+	{ HID_USB_DEVICE(USB_VENDOR_ID_ZOOSTORM, USB_DEVICE_ID_ZOOSTORM) },
+	{ }
+};
+'''
+
+** 3. 增加自己专有的驱动 **
+eg. drivers/hid/hid-zoostorm.c
+这个文件主要就是用来做键值映射的
+
+** 4. 如何获取设备上报的usage报文 **
+设备上报的usage，也可以称作原始码
+
+首先要打开内核的Debug Filesystem，默认已经打开
+
+cd /sys/kernel/debug/hid
+这下面会有所有的hid设备，一般一个usb设备都会包含几个hid设备，
+所以这下面会有几个文件夹，每个文件夹下面都有两个文件： events，rdesc
+
+rdesc： 显示当前设备的键值映射关系，修改完以后可以通过这个文件去验证
+
+events： 实时地显示当前按下的键值，可以通过它获取到原始码
+
+例如：
+'''
+report (size 8) (unnumbered) =  00 00 28 00 00 00 00 00
+Keyboard.00e0 = 0
+Keyboard.00e1 = 0
+Keyboard.00e2 = 0
+Keyboard.00e3 = 0
+Keyboard.00e4 = 0
+Keyboard.00e5 = 0
+Keyboard.00e6 = 0
+Keyboard.00e7 = 0
+Keyboard.0028 = 1
+'''
+代表相应按键的原始码是： HID_UP_KEYBOARD.0x0028
+
+具体细节可以参考 drivers/hid/hid-zoostorm.c，这个是zoostorm Play空鼠的驱动。
+
+至于细节操作，大家都懂的...
+
+[[./hid-zoostorm.c]] 

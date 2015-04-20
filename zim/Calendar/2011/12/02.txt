@@ -1,0 +1,26 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-12-02T21:07:05+08:00
+
+====== 星期五 02 12月 2011 ======
+
+int axp192_set_bits(struct axp192_power *power,
+				uint8_t reg, uint8_t bits_mask)
+{
+	int ret;
+	uint8_t reg_val;
+	
+	ret = axp192_read(power, reg, &reg_val);
+	if (ret)
+		return ret;
+
+	if ((reg_val & bits_mask) != bits_mask) {
+		reg_val |= bits_mask;
+		ret = axp192_write(power, reg, reg_val);
+		if (ret)
+			return ret;
+	}
+
+err:
+	return ret;
+}

@@ -1,0 +1,14 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-03-14T13:40:16+08:00
+
+====== 星期三 14  3月 2012 ======
+
+TAGS: axp192
+
+如果工作在VBUS限压模式，当充电电压小于Vhold时，192自动会减少充电电流，
+维持VBUS电压在Vhold之上, 不会发出 EVENT_VBUS_LOW_VHOLD 中断。
+
+如果工作在直通模式（即不限压），当充电电压小于Vhold时,
+192会发出 EVENT_VBUS_LOW_VHOLD 中断。
+

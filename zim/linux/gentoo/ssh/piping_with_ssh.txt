@@ -1,0 +1,93 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-11-04T13:46:42+08:00
+
+====== piping with ssh ======
+Created 星期二 04 十一月 2014
+
+Piping with SSH
+
+Contents
+* Tarred file transfer
+* Offsite backups
+* Hard drive backup/mirror
+* Run a local script remotely
+* Play a sound remotely
+
+One of the many nifty things you can do with SSH is piping data over a network. You're probably already familiar with plain old input/output redirection like grep viagra access_log | gzip > refererspam.gz. But throw SSH into the mix, and the pipe just became much more useful.
+
+Most of the tasks I mention below, for example piping tar, can also be done by first running a command, using scp to copy something, and then possibly running a final command. This has two drawbacks:
+
+Serial execution: I have to wait for each step to finish before beginning the next (e.g. must wait for tar to finish before beginning scp).
+Disk consumption: I might not have enough space on the source disk to make that tarball in the first place.
+Piping data over SSH solves both problems. Here are five of my favorite things SSH and pipes can do.
+
+** 1. Tarred file transfer **
+
+By far the most useful of the bunch, this involves copying a tar file over the network. scp is very inefficient when copying many small files because it sets up a separate transfer for each file. You can solve this problem by creating a single archive containing all the files and piping it over SSH:
+'''
+$ tar zcf - stuff | ssh user@server 'tar zxf -'
+'''
+The above will put stuff in the server's home directory. You can use the -C option to put the files somewhere else. (The z tells tar to use gzip compression. If you like bzip2 more, you can replace the z's with j's; or if you don't want compression at all, just omit them.)
+
+Copying from the server is just like the above, but in reverse:
+'''
+$ ssh user@server 'tar zcf - stuff' | tar zxf -
+'''
+
+** 2. Offsite backups **
+
+This is pretty much the same as above, except you want to transfer a bunch of files and leave them as a tarball on the server rather than as a bunch of files.
+'''
+$ tar zcf - stuff | ssh user@server 'cat - > stuff.tar.gz'
+'''
+You can also encrypt the tarball so that you'll have protection in case your backup server is hacked, gets stolen, or gains sentience. If you have a GPG keyring set up:
+'''
+$ tar zcf - stuff | gpg -e | ssh user@server 'cat - > stuff.tar.gz.gpg'
+'''
+If not, you can use a symmetric cipher just as easily (this should all be on one line):
+'''
+$ tar zcf - stuff | openssl enc -rc4 
+	| ssh user@server 'cat - > stuff.tar.gz.rc4'
+'''
+Note that you can choose a cipher other than RC4. Just remember what the cipher was when decrypting (this should all be on one line):
+'''
+$ ssh user@server 'cat stuff.tar.gz.rc4' 
+	| openssl enc -rc4 -d -out stuff.tar.gz
+'''
+
+** 3. Hard drive backup/mirror **
+
+Most of the time when I boot Knoppix, it's because my regular OS won't boot or is broken. It's often caused by a hard drive issue, so I want to make sure that as much data is safe as possible before I go poking around. This will copy the entire drive into a file on the remote machine:
+'''
+$ dd if=/dev/sda | ssh user@server 'dd of=sda.img'
+'''
+To restore a local drive from the image on the server, reverse the command:
+'''
+$ ssh user@server 'dd if=sda.img' | dd of=/dev/sda
+'''
+You can also copy individual partitions like sda1 and sda2 instead of entire drives like sda, sdb, etc.
+
+If you have two machines with identical hard drives (for instance, if you bought a replacement or got an RMA), you can clone them by replacing sda.img with /dev/sda (or whatever the device name is).
+
+Note that to read or write block devices (like sda) requires you to be root. Be very careful with dd as it's very deadly if used carelessly.
+
+** 4. Run a local script remotely **
+
+Say you have a little script that you want to run once on a remote machine. You could scp it, but then you'd have to log into the other machine and run the command -- that's three commands! This command will run a local file script.sh on the remote server and display any output locally:
+'''
+$ ssh user@server 'bash -s' < script.sh
+'''
+(Ok, so I concede that this is about three commands' worth of typing anyways, but that's not the point...)
+
+** 5. Play a sound remotely **
+
+This has potentially limitless mischievous uses. The possibilities are even greater if you have a webcam set up in front of your server. Especially if you have a roommate... who eats all your food.
+
+For this to work, you have to have permission to use the audio device on the remote machine. This is true by default on Ubuntu (and probably most distros), but in a default Fedora installation, you can only use the audio device if you are logged into X. You also need a connection fast enough to stream whatever you're trying to play.
+
+This plays the local file sound.mp3 from the remote machine's audio device:
+'''
+$ ssh user@server 'mpg321 -' < sound.mp3
+'''
+Obviously you won't want to use mpg321 if your file isn't an MP3. You can replace mpg321 in the command with ogg123, aplay, mplayer, and likely many others (but note that mplayer doesn't stream MP3s and WAVs well; use the others if possible).

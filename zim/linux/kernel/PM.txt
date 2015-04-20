@@ -1,0 +1,159 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-10-20T18:18:23+00:00
+
+====== PM ======
+Created 星期四 20 十月 2011
+
+
+===== 标准内核的suspend/resume过程: =====
+
+==== suspend ====
+	kernel/power/main.c 中向用户空间提供了一个接口，在/sys/power/下面，有 state、pm_async、pm_test、pm_trace等属性文件。
+	用户空间有两个办法可以让内核suspend，
+	一个就是echo mem > /sys/power/state，
+	另外也可以通过apm让系统进入睡眠（/dev/apm_bios)。
+	但无论是那个，都会执行enter_state函数，所以我们从这个函数开始。
+
+
+=== 1、sync ===
+	sys_sync()
+
+
+=== 2、freeze ===
+	suspend_prepare()
+		a、pm_prepare_console()
+		b、pm_notifier_call_chain 通过通知链发出PM_SUSPEND_PREPARE事件，驱动里可以通过register_pm_notifer()把自己的回调函数注册到这个通知链上。
+		c、usermodehelper_disable 禁止内核空间开始新的用户空间的调用。
+		d、suspend_freeze_processes 挂起进程, 所有的进程都是挂在 init_task.tasks链表和(struct task_struct *)->thread_group链表上，
+		这时候驱动里建的freezeable kthread也已经停止。
+
+
+=== 3、device suspend ===
+	这时候所有的线程都已经停止，但__外部中断还是开着的__，下面开始设备的suspend
+		a、suspend_ops->begin
+		b、suspend_console 挂起控制台，后面执行的printk将会在系统resume后才打印，为了调试方便，
+		可以在kernel cmd line里加入"__no_console_suspend__",这样 就可以将device的suspend函数里的调试信息打印出来。
+		c、依次执行 class->pm->prepare,type->pm->prepare,bus->pm->prepare,class->pm->suspend,type->pm->suspend,bus->pm->suspend,
+		这里内核用了一套异步执行的机制来实现设备的__异步挂起__，主要是考虑到父设备对子设备有依赖关系。
+		如果几个设备之间存在依赖关系，除了改变它们在dpm_list中的顺序（即调整其注册顺序），还可以将其组成父子树，
+		然后通过device_enable_async_suspend函数将其定义成异步挂起，这是比较优雅的做法。
+		d、suspend_ops->prepare
+		e、suspend_device_irqs 屏蔽除了定时器外的所有中断，设备需要挂起了， 不响应中断
+		f、依次执行 class->pm->suspend_noirq,type->pm->suspend_noirq,bus->pm->suspend_noirq,
+		g、suspend_ops->prepare_late
+		h、对于smp，将其非启动cpu都停止
+		i、禁止系统所有中断，这之后__内核不会再发生任何调度__
+
+
+=== 4、system device suspend ===
+	挂起系统设备，在drivers/base/sys.c里新建了一条名为system的总线，在sysfs中对应的目录为/sys/devices/system/，
+	系统级的设备将挂在这里，例如clock，只有在相关设备都挂起后才能停下来。
+
+
+=== 5、enter ===
+	suspend_ops->enter将唤醒后的执行地址保存起来，以便唤醒后能找到执行地址
+
+
+==== resume ====
+接下来就是唤醒过程了，完全是suspend的逆过程，
+	先是唤醒系统设备;
+	然后打开系统总中断;
+	调度器开始工作;
+	使能其它nonboot cpu;
+	suspend_ops->wake;
+	执行resume_noirq;
+	打开其它中断 resume_device_irqs();
+	suspend_ops->finish;
+	pm->resume;
+	pm->complete;
+	resume控制台，打印信息开始显示;
+	suspend_ops->end;
+	restart进程;
+	使能内核空间对用户空间的调用，注意如果是在设备唤醒过程中调用/proc/sys/kernel/hotplug会失效，
+	所以__设备唤醒过程中产生的事件不能通过hotplug接口通知用户空间，只能通 过netlink；__
+	通知链发出PM_POST_SUSPEND事件；
+	pm_restore_console;
+至此，这个标准内核的resume过程完成。
+
+==== pm_test ====
+对于suspend/resume的测试，我们可以使用内核提供的测试接口pm_test，
+	“none”：不进行测试；
+	“freezer”：测试freezer，即执行完挂起进程后原路返回；
+	“devices”：执行完设备的suspend函数后返回；
+	“platform”：执行完设备的suspend_noirq和suspend_ops->prepare_late()后返回；
+	“processors”：执行完disable_nonboot_cpus()返回；
+	“core”：挂起系统设备后，在最后cpu真正要sleep之前返回；
+一般我们使用“platform”就可以查出大部分驱动在suspend/resume中的错误。
+
+
+==== android PM ====
+android在标准内核的基础上主要加了2个东西：__earlysuspend__ and __wakelock__.
+
+=== earlysuspend: ===
+struct early_suspend {
+	struct list_head link;
+	int level;
+	void (*suspend)(struct early_suspend *h);
+	void (*resume)(struct early_suspend *h);
+};
+结构简单，link用于将所有的early_suspend连接在一起，level存的是__优先级__，
+与earlysuspend相关的函数就两个：
+void register_early_suspend(struct early_suspend *handler);
+void unregister_early_suspend(struct early_suspend *handler);
+early_suspend里有一个链表early_suspend_handlers
+注册的时候会根据level值把handler按__从小到大__的顺序插入到链表中。
+
+android 往/sys/power/state 写mem时，并没有直接调用enter_state，
+而仅仅是调用了early_suspend，它只做了两件事情，把early_suspend_handlers链表中的所有handler的suspend函数调用一遍，
+然后 wake_unlock(&main_wake_lock);释放掉main_wake_lock，当系统中所有的wakelock都释放后进入suspend。
+
+=== wakelock: ===
+struct wake_lock {
+	struct list_head    link;
+	int                 flags;
+	const char         *name;
+	unsigned long       expires;
+};
+
+接口函数：
+void wake_lock_init(struct wake_lock *lock, int type, const char *name);
+	lock->flags = (type & WAKE_LOCK_TYPE_MASK) | WAKE_LOCK_INITIALIZED;
+	list_add(&lock->link, &inactive_locks);
+
+void wake_lock_destroy(struct wake_lock *lock);
+	lock->flags &= ~WAKE_LOCK_INITIALIZED;
+	list_del(&lock->link);
+
+void wake_lock(struct wake_lock *lock);
+void wake_lock_timeout(struct wake_lock *lock, long timeout);
+
+static void wake_lock_internal(
+	struct wake_lock *lock, long timeout, int has_timeout);
+
+	lock->flags |= WAKE_LOCK_ACTIVE;
+
+	/* 把lock从inactive_locks中删除，重新加入到active_wake_locks中 */
+	/* __所以我们可以对同一个wakelock多次调用wake_lock或者wake_lock_timeout__ */
+	list_del(&lock->link);
+	if (has_timeout) {
+		lock->expires = jiffies + timeout;
+		lock->flags |= WAKE_LOCK_AUTO_EXPIRE;
+		list_add_tail(&lock->link, &active_wake_locks[type]);
+	} else {
+		lock->expires = LONG_MAX;
+		lock->flags &= ~WAKE_LOCK_AUTO_EXPIRE;
+		list_add(&lock->link, &active_wake_locks[type]);
+	}
+	/* 接着会遍历active_wake_locks找到max_timeout,然后设好定时器，到时解锁 */
+	/* 如果这时候已经没有活动的wakelock,那就会直接suspend */
+
+void wake_unlock(struct wake_lock *lock)
+	/*
+	* 解锁时也就是
+	* list_del(&lock->link);
+	* list_add(&lock->link, &inactive_locks);
+	* 然后再检查是否还有活动的wakelock
+	*/
+
+

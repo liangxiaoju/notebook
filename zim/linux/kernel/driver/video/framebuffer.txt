@@ -1,0 +1,240 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-10-24T15:23:41+00:00
+
+====== framebuffer ======
+Created 星期一 24 十月 2011
+
+tags: fb
+
+== userspace interface ==
+
+* /proc/fb
+显示当前已注册的fb设备
+
+'''
+static int fb_seq_show(struct seq_file *m, void *v)
+{
+	int i = *(loff_t *)v;
+	struct fb_info *fi = registered_fb[i];
+
+	if (fi)
+		seq_printf(m, "%d %s\n", fi->node, fi->fix.id);
+	return 0;
+}
+'''
+
+* fb cdev [0~255]
+'''
+	if (register_chrdev(FB_MAJOR,"fb",&fb_fops))
+		printk("unable to get major %d for fb devs\n", FB_MAJOR);
+'''
+向cdev申请了'主设备号为29,次设备号0~255'一个256个设备号
+在用户空间建立的所有相关的节点都会对应到这里的fb_fops,然后再由
+fb_fops分发给对应的fb设备.
+
+* graphics fb_class
+创建graphics类,用于组织所有的fb设备
+
+== kernel interface ==
+
+* register_framebuffer
+fb_info用来表示一个fb设备,fbdev驱动可以通过framebuffer_alloc来生成,
+并且负责初始化fb_info,主要就是实现fb_info->fbops.
+
+首先, register_framebuffer会使用最小的次设备号注册一个设备
+'''
+	for (i = 0 ; i < FB_MAX; i++)
+		if (!registered_fb[i])
+			break;
+
+	...
+
+	fb_info->dev = device_create(fb_class, fb_info->device,
+				     MKDEV(FB_MAJOR, i), NULL, "fb%d", i);
+'''
+然后, 为这个设备增加属性文件
+'''
+	for (i = 0; i < ARRAY_SIZE(device_attrs); i++) {
+		error = device_create_file(fb_info->dev, &device_attrs[i]);
+
+		if (error)
+			break;
+	}
+'''
+最后, 将fb_info保存到数组里
+'''
+	registered_fb[i] = fb_info;
+'''
+
+* unregister_framebuffer
+销毁相关资源
+
+== fb_ops ==
+
+'''
+static const struct file_operations fb_fops = {
+	.owner =	THIS_MODULE,
+	.read =		fb_read,
+	.write =	fb_write,
+	.unlocked_ioctl = fb_ioctl,
+	.mmap =		fb_mmap,
+	.open =		fb_open,
+	.release =	fb_release,
+	.llseek =	default_llseek,
+};
+'''
+
+* fb_open
+首先, 它会从registerd_fb[]里去寻找相应次设备号的fb_info,
+如果没找到, 就会尝试从用户空间加载fb驱动模块
+'''
+	info = get_fb_info(fbidx);
+	if (!info) {
+		request_module("fb%d", fbidx);
+		info = get_fb_info(fbidx);
+		if (!info)
+			return -ENODEV;
+	}
+'''
+然后, 调用fb_info的fb_open
+'''
+	if (info->fbops->fb_open) {
+		res = info->fbops->fb_open(info,1);
+		if (res)
+			module_put(info->fbops->owner);
+	}
+'''
+
+* fb_read
+如果fb_info有fb_read, 则使用自定义的read方法
+'''
+	if (info->fbops->fb_read)
+		return info->fbops->fb_read(info, buf, count, ppos);
+'''
+否则, 使用默认方法, 一次向用户空间buffer拷贝一个PAGE大小的数据,
+循环直到全部拷完, 或许这里面有些限制, 每次只能往用户空间拷贝一个PAGE
+'''
+	while (count) {
+		c  = (count > PAGE_SIZE) ? PAGE_SIZE : count;
+		dst = buffer;
+		fb_memcpy_fromfb(dst, src, c);
+		dst += c;
+		src += c;
+
+		if (copy_to_user(buf, buffer, c)) {
+			err = -EFAULT;
+			break;
+		}
+		*ppos += c;
+		buf += c;
+		cnt += c;
+		count -= c;
+	}
+'''
+
+* fb_ioctl
+先说明一下videomode
+'''
+struct fb_videomode {
+	const char *name;	/* optional */
+	u32 refresh;		/* optional */
+	u32 xres;
+	u32 yres;
+	u32 pixclock;
+	u32 left_margin;
+	u32 right_margin;
+	u32 upper_margin;
+	u32 lower_margin;
+	u32 hsync_len;
+	u32 vsync_len;
+	u32 sync;
+	u32 vmode;
+	u32 flag;
+};
+'''
+videomode就是我们常说的屏幕的不同分辨率,刷新率等等
+
+''' FBIOPUT_VSCREENINFO '''
+重新设置fb_var_screeninfo
+'''
+fb_set_var(info, &var)
+
+	//先判断是否删除当前videomode
+	if (var->activate & FB_ACTIVATE_INV_MODE) {
+		struct fb_videomode mode1, mode2;
+
+		fb_var_to_videomode(&mode1, var);
+		fb_var_to_videomode(&mode2, &info->var);
+		/* make sure we don't delete the videomode of current var */
+		ret = fb_mode_is_equal(&mode1, &mode2);
+
+		if (!ret) {
+		    struct fb_event event;
+
+		    event.info = info;
+		    event.data = &mode1;
+		    ret = fb_notifier_call_chain(FB_EVENT_MODE_DELETE, &event);
+		}
+
+		if (!ret)
+		    fb_delete_videomode(&mode1, &info->modelist);
+
+
+		ret = (ret) ? -EINVAL : 0;
+		goto done;
+	}
+
+	/* checks var and eventually tweaks it to something supported,
+	 * DO NOT MODIFY PAR */
+	ret = info->fbops->fb_check_var(var, info);
+
+	/* set the video mode according to info->var */
+	ret = info->fbops->fb_set_par(info);
+
+	/* 显示var中指定的区域 */
+	/* The visible screen is just a window of the video memory */
+	fb_pan_display(info, &info->var);
+
+	fb_set_cmap(&info->cmap, info);
+
+	/* 根据var生成videomode, 并添加进来 */
+	fb_var_to_videomode(&mode, &info->var);
+	if (info->modelist.prev && info->modelist.next &&
+			!list_empty(&info->modelist))
+	ret = fb_add_videomode(&mode, &info->modelist);
+'''
+
+''' FBIOPAN_DISPLAY '''
+'''
+	//调整显示区域
+	ret = fb_pan_display(info, &var);
+	if (ret == 0 && copy_to_user(argp, &var, sizeof(var)))
+		return -EFAULT;
+'''
+
+''' FBIOBLANK '''
+'''
+	ret = fb_blank(info, arg);
+
+	#define FB_BLANK_UNBLANK	0
+	#define FB_BLANK_NORMAL		1
+	#define FB_BLANK_VSYNC_SUSPEND	2
+	#define FB_BLANK_HSYNC_SUSPEND	3
+	#define FB_BLANK_POWERDOWN	4
+
+	如字面意思, UNBLANK是恢复正常, NORMAL是清屏, POWERDOWN是关闭显示器
+'''
+
+'''
+//fbdev驱动可以添加自己的ioctl
+default:
+	if (!lock_fb_info(info))
+		return -ENODEV;
+		fb = info->fbops;
+	if (fb->fb_ioctl)
+		ret = fb->fb_ioctl(info, cmd, arg);
+		else
+		ret = -ENOTTY;
+		unlock_fb_info(info);
+'''

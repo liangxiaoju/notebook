@@ -1,0 +1,36 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-12-18T11:08:22+08:00
+
+====== 008 ======
+Created 星期二 18 十二月 2012
+
+TAGS: python
+python: dict
+
+定义
+{key1:value1, key2:value2}
+
+d = {'a':1, 'b':2, 'c':3, 'de':'hello'}
+
+键值只能是不可变的对象(比如字符串)
+
+字典中的pair是没有顺序的
+
+迭代
+for k in d:
+	print k, d[k]
+
+for k,v in d.items():
+	print k, v
+
+d['f'] = 2
+del d['f]
+
+d.get('e')
+len(d)
+d.copy()
+d.has_key('a')
+d.keys()
+d.values()
+

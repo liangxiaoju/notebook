@@ -1,0 +1,49 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-12-18T10:15:35+08:00
+
+====== 006 ======
+Created 星期二 18 十二月 2012
+
+TAGS: python
+python: list
+
+列表是一组有序项目的集合, 元素可以是不同的类型, 而且列表是可变的.
+
+l1=['a', 'b']
+l2=[1, 2, 3]
+
+列表相加
+l1 + l2 = ['a', 'b', 1, 2, 3]
+
+contains
+'a' in l1 = True
+
+删除元素
+del l2[1]
+del l2[0:2]
+
+比较
+l1 == l2
+l1 >= l2
+l1 != l2
+
+迭代
+iter(l1)
+
+算术
+l1 += l2
+l1 *= l2
+l1 * n
+
+l1.append(l2)
+append object to end
+
+l1.count('a')
+返回l1中'a'的个数
+
+l1.insert(2, 'c')
+在l1[2]插入'c'
+
+remove and return iterm at index (default last)
+l1.pop(1)

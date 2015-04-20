@@ -1,0 +1,22 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-06-18T10:23:22+08:00
+
+====== media-framework ======
+Created 星期一 18 六月 2012
+
+TAGS: media
+
+media framework用来配置多媒体设备以及呈现其内部的拓扑结构。
+为此，media-framework将硬件描述成通过pads链接的entities的集合。
+
+entity：
+	媒体最基本的单元，可以是CMOS sensor，或者外围连接器等等。
+
+pad：
+	不同entity之间交流数据的端口。
+
+link：
+	从source pad到sink pad之间的一个连接通路。
+
+

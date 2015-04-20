@@ -1,0 +1,39 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-07-04T13:51:59+08:00
+
+====== nfsroot ======
+Created 星期五 04 七月 2014
+
+== kernel client ==
+
+* enable nfs client support
+    CONFIG_NFS_FS
+    CONFIG_NFS_V3
+    CONFIG_NFS_V4
+    CONFIG_ROOT_NFS
+
+* enable kernel ip auto configure
+    IP: kernel level autoconfiguration
+    CONFIG_IP_PNP
+    CONFIG_IP_PNP_DHCP
+
+* set kernel cmdline
+CONFIG_CMDLINE="console=ttyFIQ0 androidboot.console=ttyFIQ0 init=/sbin/init root=/dev/nfs nfsroot=192.168.11.197:/usr/src/nfsroot,v3,tcp nfsrootdebug ip=dhcp"
+
+
+== server ==
+
+* install nfs-utils
+
+* export path
+    add
+    '''
+    /usr/src/nfsroot	*(rw,no_root_squash,no_subtree_check)
+    '''
+    to '/etc/exports'
+
+* start nfsd
+    '''
+    /etc/init.d/nfs start
+    '''

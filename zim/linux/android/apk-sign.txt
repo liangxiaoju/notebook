@@ -1,0 +1,22 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2013-10-10T17:41:27+08:00
+
+====== apk-sign ======
+Created 星期四 10 十月 2013
+
+步骤
+1.密钥文件,在 android 工程源码目录中的位置"build/target/product/security",下面的
+platform.pk8 和 platform.x509.pem 两个文件。
+
+2.Android 提供的 Signapk 工具,signapk 的源代码是在"build/tools/signapk"下,编译后
+在 out/host/linux-x86/framework 下 signapk.jar
+
+3.分别把”platform.pk8”, “platform.x509.pem” “signapk.jar”拷贝到”外发第三方应用签
+名方法”文件夹目录 
+
+4.命令行进入到”外发第三方应用签名方法”目录执行以下命令:
+java -jar signapk.jar platform.x509.pem platform.pk8
+TestSystemPermission.apk New.apk
+TestSystemPermission.apk:为需要签名的 apk 名
+New.apk:为签名后的 apk 名

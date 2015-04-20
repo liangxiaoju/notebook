@@ -1,0 +1,8 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-01-03T14:24:28+08:00
+
+====== 星期二 03  1月 2012 ======
+
+TODO:
+用reboot重启机器后，TP可能无效。

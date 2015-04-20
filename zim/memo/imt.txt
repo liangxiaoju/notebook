@@ -1,0 +1,38 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2013-04-17T14:57:01+00:00
+
+====== imt ======
+Created 星期三 17 四月 2013
+
+设置--HDMI--HDMI屏幕休眠选项  功能无效
+frameworks/base/services/java/com/android/server/power/PowerManagerService.java +875
+
+
+diff --git a/hardware/broadcom/wlan/bcmdhd/wpa_supplicant_8_lib/driver_cmd_nl80211.c b/hardware/broadcom/wlan/bcmdhd/wpa_supplicant_8_lib/driver_cmd_nl80211.c
+index f7af801..272805e 100644
+--- a/hardware/broadcom/wlan/bcmdhd/wpa_supplicant_8_lib/driver_cmd_nl80211.c
++++ b/hardware/broadcom/wlan/bcmdhd/wpa_supplicant_8_lib/driver_cmd_nl80211.c
+@@ -268,8 +268,9 @@ int wpa_driver_nl80211_driver_cmd(void *priv, char *cmd, char *buf,
+                ifr.ifr_data = &priv_cmd;
+ 
+                if ((ret = ioctl(drv->global->ioctl_sock, SIOCDEVPRIVATE + 1, &ifr)) < 0) {
+-                       wpa_printf(MSG_ERROR, "%s: failed to issue private commands\n", __func__);
+-                       wpa_driver_send_hang_msg(drv);
++               //del by lt: Any unsupport private command go continue
++               //      wpa_printf(MSG_ERROR, "%s: failed to issue private commands\n", __func__);
++               //      wpa_driver_send_hang_msg(drv);
+                } else {
+                        drv_errors = 0;
+                        ret = 0;
+
+
+WIFI FTP地址：ftp://www.rockchip.com.cn
+账号名：rkwifi 
+密码：Cng9280H8t 
+
+51
+企业用户
+北京数码视讯
+北京数码视讯
+suma9111

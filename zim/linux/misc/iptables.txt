@@ -1,0 +1,59 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-12-26T18:17:28+08:00
+
+====== iptables ======
+Created 星期一 26 十二月 2011
+
+==== Usage ====
+** 查看当前规则 **
+	''$ sudo iptables -t nat -L''
+
+** 创建 NAT **
+
+    外网IP: 192.168.0.0/24
+    内网IP: 192.168.1.0/24
+
+    __在内网主机上配置路由__
+	 ''route add default gw 192.168.1.1''	# 内网主机将网关地址改为路由器地址
+
+    __在路由器上配置路由__
+    eth0: 192.168.0.3
+    eth1: 192.168.1.1
+    ''route add -net 192.168.1.0 netmask 255.255.255.0 dev eth1'' # 为eth1添加路由, eg. 寻址192.168.1.11时,将在eth1上广播
+    ''route add -net 192.168.0.0 netmask 255.255.255.0 dev eth0'' # 为eth0添加路由
+    ''route add default gw 192.168.0.1 dev eth0'' 添加外网网关
+
+    __在路由器上配置iptables__
+	* 打开linux转发功能
+	''$ echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward ''	# 路由器配置转发
+
+	* 内网主机访问外网
+	''iptables -t nat -A POSTROUTING -s 192.168.1.0/24 -o eth0 -jSNAT --to 192.168.0.3''	# 把内网发往外网的packet源地址修改成路由器ip地址
+
+	* 外网访问内网主机
+	''iptables -t nat -A PREROUTING -d 192.168.0.3 --dport 5060 -jDNAT --to 192.168.1.100''	# 将外网发到路由器192.168.0.3:5060端口的packet转到192.168.1.100内网主机上,外网直接访问内网的 5060 端口服务
+
+
+**android softap iptables**
+
+	* 设置IP
+    ''ifconfig eth0 192.168.1.3'' # 公网IP
+    ''ifconfig wlan0 192.168.43.1'' # 内网IP
+
+	* 打开转发
+    ''echo 1 > /proc/sys/net/ipv4/ip_forward''
+
+	* 配置iptables rules
+    ''iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE'' # 自动把源地址设置成eth0的IP
+      相当于
+    ''iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to 192.168.1.3''
+
+    ''iptables -A FORWARD -i wlan0 -o eth0 -m state --state ESTABLISHED,RELATED -j ACCEPT''
+    ''iptables -A FORWARD -i wlan0 -o eth0 -m state --state INVALID -j DROP''
+    ''iptables -A FORWARD -i wlan0 -o eth0 -j ACCEPT''
+    ''iptables -A FORWARD -j DROP''
+
+==== See Also ====
+	* [[http://rlworkman.net/howtos/iptables/cn/iptables-tutorial-cn-1.1.19.html#TRAVERSINGOFTABLES|Iptables 指南 1.1.19]]
+

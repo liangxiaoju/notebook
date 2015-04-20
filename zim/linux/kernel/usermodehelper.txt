@@ -1,0 +1,29 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-09-04T09:26:40+08:00
+
+====== usermodehelper ======
+Created 星期二 04 九月 2012
+
+TAGS: usermodehelper
+
+static void exec_func(struct work_struct *data)
+{
+	char *filename = "sh";
+
+	char *envp[] = {
+		"HOME=/",
+		"PATH=/sbin:/bin:/system/bin:/system/xbin",
+		NULL,
+	};
+
+	char *argv[] = {
+		filename,
+		"dmesg",
+		NULL,
+	};
+
+	int ret;
+
+	ret = call_usermodehelper(filename, argv, envp, 1);
+}

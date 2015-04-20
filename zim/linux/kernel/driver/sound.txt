@@ -1,0 +1,7 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-11-08T16:13:11+00:00
+
+====== sound ======
+Created 星期二 08 十一月 2011
+

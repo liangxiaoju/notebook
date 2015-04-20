@@ -1,0 +1,77 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-07-25T11:33:22+08:00
+
+====== audio ======
+Created 星期五 25 七月 2014
+
+** MediaRecorder **
+
+frameworks/base/media/java/android/media/MediaRecorder.java
+frameworks/base/media/jni/android_media_MediaRecorder.cpp
+
+    "setCamera",        
+    "setVideoSource",   
+    "setAudioSource",   
+    "setOutputFormat",  
+    "setVideoEncoder",  
+    "setAudioEncoder",  
+    "setParameter",     
+    "_setOutputFile",   
+    "setVideoSize",     
+    "setVideoFrameRate",
+    "setMaxDuration",   
+    "setMaxFileSize",   
+    "_prepare",         
+    "getMaxAmplitude",  
+    "start",            
+    "stop",             
+    "native_reset",     
+    "release",          
+    "native_init",      
+    "native_setup",     
+    "native_finalize",  
+
+frameworks/av/media/libmedia/mediarecorder.cpp
+frameworks/av/media/libmediaplayerservice/MediaPlayerService.cpp
+frameworks/av/media/libmediaplayerservice/MediaRecorderClient.cpp
+frameworks/av/media/libmediaplayerservice/StagefrightRecorder.cpp
+frameworks/av/media/libstagefright/MPEG4Writer.cpp
+ |
+\_/
+frameworks/av/media/libmedia/AudioRecord.cpp
+
+
+** AudioRecord **
+frameworks/base/media/java/android/media/AudioRecord.java
+frameworks/base/core/jni/android_media_AudioRecord.cpp
+
+    "native_start",
+    "native_stop",
+    "native_setup",
+    "native_finalize",
+    "native_release",
+    "native_read_in_byte_array"
+    "native_read_in_short_array"
+    "native_read_in_direct_buffer",
+    "native_set_marker_pos",
+    "native_get_marker_pos",
+    "native_set_pos_update_period",
+    "native_get_pos_update_period",
+    "native_get_min_buff_size",
+
+ |
+\_/
+frameworks/av/media/libmedia/AudioRecord.cpp
+
+
+** lowlevel **
+frameworks/av/media/libmedia/AudioRecord.cpp
+ |
+\_/
+frameworks/av/services/audioflinger/AudioPolicyService.cpp
+ |
+\_/
+hardware/libhardware_legacy/audio/audio_policy_hal.cpp
+hardware/libhardware_legacy/audio/AudioPolicyManagerBase.cpp
+

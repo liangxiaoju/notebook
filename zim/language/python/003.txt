@@ -1,0 +1,95 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-02-26T13:10:18+08:00
+
+====== 003 ======
+Created 星期日 26 二月 2012
+
+TAGS: python
+python: time
+
+
+import time
+
+=== 两种时间表示方法： ===
+
+== secondes since Epoch ==
+
+Epoch 与系统相关，在linux下是19700101
+可以通过gmtime(0)获取;
+
+== a tuple of 9 integers giving local time ==
+
+	tm_year
+		year (four digits, e.g. 1998)
+	tm_yday
+		day of year, [1, 366]
+	tm_wday
+		day of week (0-6, Monday is 0)
+	tm_sec
+		[0, 59]
+	tm_mon
+		[1, 12]
+	tm_min
+		[0, 59]
+	tm_mday
+		[1, 31]
+	tm_isdst
+		1 if summer time is in effect , 0 if not, and -1 if unknown
+	tm_hour
+		[0, 23]
+
+
+**methods:**
+	x+y
+	y in x
+	x==y
+	x>=y
+	x[y]
+	x[i:j]
+	x>y
+	hash(x)
+	x<=y
+	len(x)
+	x<y
+	x*n
+	x!=y
+	repr(x)
+	n*x
+
+
+**functions:**
+
+	* asctime([tuple])
+		covert a time tuple to a string.
+		if tuple is not present, tuple=__localtime__()
+               	clock()
+
+	* ctime([seconds])
+		convert a time in seconds since the Epoch to a string in __local time__.
+
+		=asctime(localtime(seconds))
+
+	* gmtime([seconds])
+		convert seconds since the Epoch to a time tuple expressing __UTC__.
+
+	* localtime([seconds])
+	 	convert seconds since the Epoch to a time tuple expressing __local time__.
+
+	* mktime(tuple)
+	 	convert a time tuple in __local time__ to seconds since the Epoch.
+
+	* sleep(seconds)
+	 	delay
+
+	* strftime(format[, tuple])
+	 	convert a time tuple to a string according to a format specification.
+                if tuple is not present, tuple=localtime().
+
+	* strptime(string, format)
+	 	parse a string to a time tuple.
+
+	* time()
+	 	return the current time in seconds since the Epoch.
+
+	* tzset()

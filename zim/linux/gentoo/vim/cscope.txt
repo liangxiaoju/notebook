@@ -1,0 +1,69 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-01-07T11:15:35+08:00
+
+====== cscope ======
+Created 星期六 07 一月 2012
+
+  It is designed to answer questions like:
+       * Where is this symbol used? **s**
+       * Where is it defined?	**g**
+       * Where did this variable get its value?	**
+       * What is this global symbol's definition?	**g**
+       * Where is this function in the source files?	**g**
+       * What functions call this function?	**c**
+       * What functions are called by this function?	**d**
+       * Where does the message "out of space" come from?	**t**
+       * Where is this source file in the directory structure?	**f**
+       * What files include this header file?	**i**
+
+==== Usage ====
+** 创建数据库 **
+	''$ cscope -Rb''
+
+** 建立连接 **
+	''(vi):cscope add cscoupe.out''
+
+** 给内核创建数据库 **
+	''$ find . -path "./arch/*" ! -path "./arch/arm*" -prune -o  \
+		-path "./include/asm-*" ! -path "./include/asm-arm*" -prune -o  \
+		-path "./Documentation*" -prune -o \
+		-path "./scripts*" -prune -o \
+		-name "*.[chsS]" -print > cscope.files''	# 生成需要索引的文件
+	''$ cscope -P$(pwd)/ -bkq''	# 由于生成的cscope.files不是绝对路径，由**-P**来指定。
+	**-b**	仅创建交叉引用,不启动交互模式
+	**-k**	内核模式，不包含 ''/usr/include'' 下的文件
+	**-q**	生成''cscope.in.out'' 和 ''cscope.po.out''， 用于加快符号的查找速度
+	''$ ctags -L cscope.files''	# 创建 tags
+
+** 任意目录下使用cscope **
+	''$ export CSCOPE_DB=/to/path/cscope.out''	# 注意cscope.out需要使用绝对路径
+
+** 在vi中的设置 **
+
+	" cscope setting
+	if has("cscope")
+	  set csprg=/usr/bin/cscope
+	  if has("quickfix")
+		  set cscopequickfix=s-,c-,d-,i-,t-,e-
+	  endif
+	  set nocscopetag
+	  set cscopetagorder=0
+	  set nocsverb
+	  " add any database in current directory
+	  if filereadable("cscope.out")
+	      cs add cscope.out
+	  endif
+	endif
+
+	nmap <C-a>s :cs find s <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-a>g :cs find g <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-a>c :cs find c <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-a>t :cs find t <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-a>e :cs find e <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-a>f :cs find f <C-R>=expand("<cfile>")<CR><CR>
+	nmap <C-a>i :cs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
+	nmap <C-a>d :cs find d <C-R>=expand("<cword>")<CR><CR>
+
+==== See Also ====
+	* man cscope

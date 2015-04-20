@@ -1,0 +1,21 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-02-11T16:47:09+08:00
+
+====== 001 ======
+Created 星期六 11 二月 2012
+
+TAGS: python
+python:print,raw_input
+
+print "hello, %s-%.1f" %("python", 2.7)
+
+print sys.stderr, "Error:xxx"
+
+logfile = open("/tmp/log.txt", 'a')
+print >> logfile, "Error:xxx"
+logfile.close()
+
+raw_input([prompt]) -> string
+
+print "%s" %(raw_input("Enter:"))

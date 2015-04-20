@@ -1,0 +1,13 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-08-12T19:21:45+08:00
+
+====== cocos2dx ======
+Created 星期二 12 八月 2014
+
+keytool -genkey -v -keystore my-release-key.keystore -alias alias_name -keyalg RSA -keysize 2048 -validity 10000
+
+keytool -exportcert -alias androiddebugkey -keystore path-to-debug-or-production-keystore -list -v
+
+#http-proxy-host = 188.241.141.112
+#http-proxy-port = 7808

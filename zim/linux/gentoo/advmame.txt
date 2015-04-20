@@ -1,0 +1,24 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2006-01-01T04:54:02+08:00
+
+====== advmame ======
+Created 星期日 01 一月 2006
+
+TAGS: game, advmame
+
+* emerge -av advancemame
+
+* gpasswd -a lxjsky games
+ 
+* move kof97.zip and neogeo.zip to ''~/.advance/rom''
+ 
+* make changes to ''~/.advance/advmame.rc''
+	input_map[p1_up] keyboard[0,w]
+	input_map[p1_down] keyboard[0,s]
+	input_map[p1_left] keyboard[0,a]
+	input_map[p1_right] keyboard[0,d]
+	input_map[p1_button1] keyboard[0,j]
+	input_map[p1_button2] keyboard[0,k]
+	input_map[p1_button3] keyboard[0,l]
+	input_map[p1_button4] keyboard[0,i]

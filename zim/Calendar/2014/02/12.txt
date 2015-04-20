@@ -1,0 +1,9 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2014-02-12T15:50:14+08:00
+
+====== 星期三 12 2月 2014 ======
+
+** 把模块文件放到 /lib/module/`uname -r`/kernel/ 目录下
+** 运行 depmod
+** modprobe

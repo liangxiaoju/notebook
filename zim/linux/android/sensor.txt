@@ -1,0 +1,22 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-02-13T11:08:26+08:00
+
+====== sensor ======
+Created 星期一 13 二月 2012
+
+
+The coordinate-system is defined relative to the screen of the phone in its
+default orientation. The axes are not swapped when the device's screen
+orientation changes.
+
+The X axis is horizontal and points to the right, the Y axis is vertical and
+points up and the Z axis points towards the outside of the front face of the
+screen. In this system, coordinates behind the screen have negative Z values.
+
+Note:
+This coordinate system is different from the one used in the
+Android 2D APIs where the origin is in the top-left corner.
+
+Sensors coordinate-system diagram:
+{{./axis_device.png}}

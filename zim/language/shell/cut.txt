@@ -1,0 +1,41 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-03-18T22:15:58+08:00
+
+====== cut ======
+Created 星期日 18 三月 2012
+
+TAGS: cut
+
+=== usage ===
+	**cut OPTION FILE**
+
+	** -b, --bytes=LIST **
+		选择LIST选择的字节
+
+	** -c, --characters=LIST **
+		选择LIST选择的字符
+
+	** -d, --delimiter=DELIM **
+		制定分隔符，cut默认以TAB作为分隔符
+
+	** -f, --fields=LIST **
+		选择LIST选择的字段
+
+	** -s **
+		只打印含有分隔符的行
+
+	** --output-delimiter=STR **
+		使用STR作为打印的分隔符，默认输入分隔符一样
+
+	** LIST表示法 **
+		N: 第N个字节、字符、字段，从1开始
+		N-: 第N个到最后一个
+		N-M: N到M
+		-M: 第一个到第M个
+
+	__如果没有制定FILE，则从标准输入读取数据__
+
+
+=== see also ===
+	man cut

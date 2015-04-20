@@ -1,0 +1,15 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-02-13T14:07:45+08:00
+
+====== 0001 ======
+Created 星期一 13 二月 2012
+
+TAGS:java
+
+public class HashMap<K, V> extends AbstractMap<K, V> implements Cloneable, Serializable {
+}
+泛型，K、V都是类型占位符，在生成实例时需要指定具体类型。
+
+private HashMap<SensorListener, LegacyListener> mLegacyListenersMap =
+    new HashMap<SensorListener, LegacyListener>();

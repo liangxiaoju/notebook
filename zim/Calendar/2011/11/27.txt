@@ -1,0 +1,9 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2011-11-27T12:55:39+08:00
+
+====== 星期日 27 11月 2011 ======
+
+
+大部分事情都可以分成两部分，做什么和怎么做。
+软件设计中也会经常遇到机制和策略的问题（mechanism and policy）

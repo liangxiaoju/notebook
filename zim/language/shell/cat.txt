@@ -1,0 +1,30 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-07-30T14:52:03+08:00
+
+====== cat ======
+Created 星期一 30 七月 2012
+
+TAGS: cat
+
+* 1
+cat << EOF > file.sh
+
+echo $((2+3)
+...
+
+EOF
+
+file.sh: "echo 5"
+
+
+* 2
+给结束符加上单引号, 可以让shell不转义
+cat << 'EOF' > file.sh
+
+echo $((2+3))
+...
+
+EOF
+
+file.sh: "echo $((2+3))"

@@ -1,0 +1,20 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-03-12T20:46:28+08:00
+
+====== mutagen ======
+Created 星期一 12 三月 2012
+
+TAGS: mutagen
+
+windows下的mp3文件都是用GBK/GB18030编码写入标签信息的，而大多数的linux播放器默认以utf-8编码读取，这就产生了乱码。
+
+解决办法就是把标签信息改成utf-8编码，可以使用mutagen工具。
+
+用法：
+
+mid3iconv -e gbk *.mp3
+
+如果想转换当前目录下的所有mp3（包括子目录）：
+find . -iname "*.mp3" -execdir mid3iconv -e gbk {} +
+

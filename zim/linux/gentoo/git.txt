@@ -1,0 +1,100 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-03-05T16:30:17+08:00
+
+====== git ======
+Created 星期一 05 三月 2012
+
+=== git 常用命令： ===
+
+	* git log
+
+		git log -n
+			显示最近n次提交信息
+
+		git log dev@{2012-01-01}..dev@{2012-03-01}
+			显示2012-01-01到2012-03-01之间的log
+
+		git log -- <path>
+			显示path路径的log信息
+
+		git log --committer=Torvalds
+			仅显示Torvalds提交的信息
+
+		git log --grep="E9"
+			仅显示包含"E9"的提交
+
+		git log master
+			可以不切换分支直接显示其他分支的信息
+
+	* git status
+
+		git status
+			显示当前状态
+
+		git status -- <path>
+			仅显示path目录的状态
+
+	* git add
+
+		git add <file>
+			把文件file加入到index中
+
+	* git commit
+
+		git commit -m "test"
+			把在index中的文件提交并附上提交信息
+
+	* git pull
+		把远端的数据拉下来合并
+
+	* git checkout
+
+		git checkout dev
+			切换到dev分支
+
+		git checkout -- file
+			丢弃文件file的更改
+
+		git checkout -b test
+			建立并切换到test分支
+
+	* git merge
+
+		git merge test
+			把test分支合并到当前分支
+
+	* git push
+
+		git push origin dev
+			把本地的dev分支push到远端的dev分支上
+
+		git push origin dev:master
+			把本地dev分支push到远端master分支上
+
+		git push origin +dev:master
+			同上，但允许non-fast-forward updates
+			
+		git push origin :master
+			删除远端的master分支
+
+	* git diff
+
+		git diff --binary > patch.diff
+			用于生成不带有提交信息的diff文件
+			可以用'git apply patch.diff'打进去
+
+	* git branch
+
+		git branch --set-upstream dev origin/dev
+			设置跟踪分支
+
+    * git clean
+
+        git clean -d -f
+            Remove untracked files from the working tree
+
+
+=== see also ===
+	man git
+	man 7 gitrevisions

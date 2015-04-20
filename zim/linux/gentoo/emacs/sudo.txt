@@ -1,0 +1,11 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-07-25T11:24:43+08:00
+
+====== sudo ======
+Created 星期三 25 七月 2012
+
+TAGS: emacs, sudo
+
+用超级权限打开文件:
+        C-x C-f /sudo::/$file

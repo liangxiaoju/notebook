@@ -1,0 +1,7 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-04-05T14:47:44+08:00
+
+====== usb ======
+Created 星期四 05 四月 2012
+

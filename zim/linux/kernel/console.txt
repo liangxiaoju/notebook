@@ -1,0 +1,36 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2012-12-14T09:23:16+08:00
+
+====== console ======
+Created 星期五 14 十二月 2012
+
+tags: openvt, chvt, setconsole, setlogcons, fgconsole
+
+**chvt N**
+	make /dev/ttyN the foreground terminal.
+	Ctrl-LeftAlt-FN usually has a similar effect.
+
+**openvt [-c vtnumber] [-s] [-w] [--] command**
+	[-c N]:	use the /dev/ttyN VT
+	[-s]:	switch to the new VT first [chvt N]
+	[-w]:	wait for command to complete
+
+**setconsole [-r] [/dev/ttyN]**
+	[-r]:			reset output to /dev/console
+	[/dev/ttyN]:	redirect system console output to DEVICE
+
+eg.
+    一般我们会在kernel cmdline里指定系统控制台,例如console=ttyFIQ0,那内核信息就会通过ttyFIQ0输出,
+    可以通过setconsole把系统控制台指定成其它tty设备,
+    如果屏幕在tty1上, setconsole /dev/tty1将会把系统控制台设成屏幕.
+
+**setlogcons N**
+	redirect the kernel output to console N (0 for current)
+
+**fgconsole**
+	print the number of the active VT
+
+
+== see also ==
+	''busybox/console-tools''
