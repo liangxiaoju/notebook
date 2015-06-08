@@ -1,0 +1,20 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2015-05-13T15:17:19+08:00
+
+====== sepolicy ======
+Created Wednesday 13 May 2015
+
+=== example ===
+'''
+type ssr_record, domain;
+permissive ssr_record;
+type ssr_record_exec, exec_type, file_type;
+init_daemon_domain(ssr_record)
+
+allow ssr_record self:netlink_socket create_socket_perms;
+allow ssr_record mobile_info_file:file create_file_perms;
+allow ssr_record mobile_info_file:dir create_dir_perms;
+
+#unconfined_domain(ssr_record)
+'''

@@ -1,0 +1,22 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2015-04-30T17:56:56+08:00
+
+====== tcl ======
+Created Thursday 30 April 2015
+
+=== email ===
+* url
+	https://mailsz.tct.tcl.com
+* username
+	hq.ta-mp.com/${username}
+
+* root
+	*#*#212018#*#*
+
+
+	android-bld@10.128.180.54 mobile#5
+	android-bld@10.128.180.29 mobile#5
+	android-bld@10.128.161.97 mobile#3
+*
+	*#22384#*
