@@ -1,0 +1,45 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2015-07-09T13:31:19+08:00
+
+====== capability ======
+Created Thursday 09 July 2015
+
+TAGS: capability, freezefb
+
+Description:
+有时需要在android上添加一些守护进程service，如果以root用户运行会对cts造成影响，因为cts要求所有的root进程要有详细的说明；
+所以我们一般以system用户运行，但system用户有时并不能完全满足我们的权限要求；
+capability是linux内核中把root权限进行了细分的一种机制，用户可以获取某一个权限，而不用以root用户运行；
+一种可行的做法是先以root用户运行，然后设置keepcaps，再切换到system用户，最后设置需要的capability；
+
+'''
+static int freezefb_update_cap(void)
+{
+	int retvalue = 0;
+	struct __user_cap_header_struct header;
+	struct __user_cap_data_struct cap;
+
+	memset(&header, 0, sizeof(header));
+	memset(&cap, 0, sizeof(cap));
+	/* keep caps when we setuid to 'system' so that we can capset() */
+	prctl(PR_SET_KEEPCAPS, 1, 0, 0, 0);
+	retvalue =  setgid(AID_SYSTEM);
+	if(retvalue != 0){
+		fprintf(stderr, "setgid error");
+		return retvalue;
+	}
+	retvalue = setuid(AID_SYSTEM);
+	if(retvalue != 0){
+		fprintf(stderr, "setuid error");
+		return retvalue;
+	}
+	header.version = _LINUX_CAPABILITY_VERSION;
+	header.pid = 0;
+	cap.effective = 1 << CAP_SYS_TTY_CONFIG;
+	cap.permitted = cap.effective;
+	cap.inheritable = 0;
+	capset(&header, &cap);
+	return 0;
+}
+'''
