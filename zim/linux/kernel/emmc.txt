@@ -1,0 +1,45 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2015-11-02T13:37:16+08:00
+
+====== emmc ======
+Created Monday 02 November 2015
+
+'''
+read block length:
+	2^READ_BL_LEN and READ_BL_LEN=csd[83:80]
+	default to 512B
+
+write block length:
+	2^WRITE_BL_LEN and WRITE_BL_LEN=csd[25:22]
+	default to 512B
+
+erase group size:
+	ERASE_GRP_SIZE [46:42]
+	ERASE_GRP_MULT [41:37]
+	EXT_CSD_ERASE_GROUP_DEF 175
+	EXT_CSD_HC_ERASE_GRP_SIZE 224
+
+	if ext_csd[EXT_CSD_ERASE_GROUP_DEF] & 0x01:
+		erase_size = ext_csd[EXT_CSD_HC_ERASE_GRP_SIZE] * 512KB
+	else:
+		erase_size = (ext_csd[ERASE_GRP_SIZE] + 1) * (ext_csd[ERASE_GRP_MULT] + 1) * write_block_size
+
+write protect group size:
+	WP_GRP_SIZE [36:32]
+	HC_WP_GRP_SIZE 221
+
+	if ext_csd[EXT_CSD_HC_ERASE_GRP_SIZE] & 0x01:
+		wp_group_size = ext_csd[HC_WP_GRP_SIZE] * erase_size
+	else:
+		wp_group_size = (ext_csd[WP_GRP_SIZE] + 1) * erase_size
+
+can use 'mmc_switch' to transfer between original mode and hc mode:
+	err = mmc_switch(card, EXT_CSD_CMD_SET_NORMAL,
+			EXT_CSD_ERASE_GROUP_DEF, 1,
+			card->ext_csd.generic_cmd6_time);
+
+
+csd: /sys/class/mmc_host/mmc0/mmc0:0001/csd
+ext_csd: /sys/kernel/debug/mmc0/mmc0:0001/ext_csd
+'''

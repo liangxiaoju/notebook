@@ -1,0 +1,15 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2015-11-23T17:53:05+08:00
+
+====== install-deb ======
+Created Monday 23 November 2015
+
+# try to install deb
+dpkg -i xxx.deb
+
+# correct broken dependencies in place
+apt-get -f install
+
+# install deb again
+dpkg -i xxx.deb
