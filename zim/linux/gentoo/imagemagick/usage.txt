@@ -1,0 +1,141 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2016-04-13T13:13:03+08:00
+
+====== usage ======
+Created Wednesday 13 April 2016
+
+imagemagick文档：http://www.imagemagick.org/script/command-line-options.php
+
+convert功能强大，用来批处理图片的放大、缩小、裁剪、旋转、合并、水印、拼接、格式转换等都非常方便，特别适合后台的图片处理。
+1，获取图片信息
+
+[plain] view plain copy
+
+	$identify image.png  
+	image.png PNG 559x559 559x559+0+0 8-bit sRGB 467KB 0.000u 0:00.008  
+
+如果只需要获取宽高：
+
+[plain] view plain copy
+
+	$identify -format "%wx%h" image.png  
+
+2，放大，缩小 -resize
+
+[plain] view plain copy
+
+	$convert image.png -resize 200x200 resize.png  
+
+也可以按照比例（缩小一半）：
+
+[plain] view plain copy
+
+	$convert image.png -resize 50% resize.png  
+
+还可以多次缩放（先缩小一半，再放大一倍，效果就是变模糊了）：
+
+[plain] view plain copy
+
+	$convert image.png -resize 50%  -resize 200%  resize.png  
+
+3，放大，缩小 -sample
+与resize的区别在于-sample只进行了采样，没有进行插值，所以用来生成缩略图最合适
+[plain] view plain copy
+
+	$convert image.png -sample 50% sample.png  
+
+这个处理的效果就是马赛克：
+[plain] view plain copy
+
+	$convert image.png -sample 10% -sample 1000% sample.png  
+
+4，裁剪 -crop
+从（50，50）位置开始，裁剪一个100X100大小的图片：
+[plain] view plain copy
+
+	$convert image.png -crop 100x100+50+50 crop.png  
+
+如果不指定位置，则按照这个大小分隔出小图片，这个命令生成crop-0.png，crop-1.png，crop-2.png……：
+[plain] view plain copy
+
+	$convert image.png -crop 100x100 crop.png  
+
+可以指定裁剪位置的相对位置 -gravity：
+[plain] view plain copy
+
+	$convert image.png -gravity northeast -crop 100x100+0+0 crop.png  
+
+-gravity即指定坐标原点，有northwest：左上角，north：上边中间，northeast：右上角，east：右边中间……
+5，旋转 -rotate
+[plain] view plain copy
+
+	$convert image.png -rotate 45 rotate.png  
+
+默认的背景为白色，我们可以指定背景色：
+[plain] view plain copy
+
+	$convert image.png -backround black -rotate 45 rotate.png  
+	$convert image.png -background #000000 -rotate 45 rotate.png  
+
+还可以指定为透明背景色：
+[plain] view plain copy
+
+	$convert image.png -background rgba(0,0,0,0) -rotate 45 rotate.png  
+
+6，合并
+合并指的是将一张图片覆盖到一个背景图片上：
+[plain] view plain copy
+
+	$convert image.png -compose over overlay.png -composite newimage.png  
+
+-compose指定覆盖操作的类型，其中over为安全覆盖，另外还有xor、in、out、atop等等
+覆盖的位置可以通过-gravity指定：
+[plain] view plain copy
+
+	$convert image.png -gravity southeast -compose over overlay.png -composite newimage.png  
+
+这是将图片覆盖到底图的右下角。
+7，更改图片的alpha通道
+分两步：
+[plain] view plain copy
+
+	$convert image.png -define png:format=png32  image32.png  
+	$convert image32.png -channel alpha -fx "0.5" imagealpha.png  
+
+这个命令首先将image.png的格式改为png32（确保有alpha通道），然后更改alpha通道置为0.5，也就是半透明，值的范围为0到1.0
+可以使用将一张透明图片覆盖到原图上的方式做水印图片：
+[plain] view plain copy
+
+	$convert image.png -gravity center -compose over overlay.png -composite newimage.png  
+	$convert image.png -gravity southeast -compose over overlay.png -composite newimage.png  
+
+8，拼接
+横向拼接（+append），下对齐（-gravity south）：
+[plain] view plain copy
+
+	$convert image1.png image2.png image3.png -gravity south +append result.png  
+
+纵向拼接（-append），右对齐（-gravity east）：
+[plain] view plain copy
+
+	$convert image1.png image2.png image3.png -gravity east -append result.png  
+
+9，格式转换
+[plain] view plain copy
+
+	$convert image.png image.jpg  
+	$convert image.png -define png:format=png32 newimage.png  
+
+10，文字注释
+[plain] view plain copy
+
+	$convert image.png -draw "text 0,20 'some text'" newimage.png  
+
+从文件text.txt中读取文字，指定颜色，字体，大小，位置：
+[plain] view plain copy
+
+	$convert source.jpg -font xxx.ttf -fill red -pointsize 48 -annotate +50+50 @text.txt result.jpg  
+
+11，去掉边框
+$convert image.png -trim -fuzz 10% newimage.png

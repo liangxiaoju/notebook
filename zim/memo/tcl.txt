@@ -20,3 +20,10 @@ Created Thursday 30 April 2015
 	android-bld@10.128.161.97 mobile#3
 *
 	*#22384#*
+
+* EngineerMode
+	*#*#3646633#*#*
+
+* teleweb
+	temp
+	temp123

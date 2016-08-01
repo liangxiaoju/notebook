@@ -1,0 +1,152 @@
+
+set nocompatible
+
+" ctags
+set tags=tags;/
+
+set noswapfile
+set autoread
+
+set fileencodings=ucs-bom,utf-8,cp936,gb18030,default,latin1
+
+set tabstop=4
+set noexpandtab
+set shiftwidth=4
+set numberwidth=2
+
+"Have the mouse enabled all the time
+set mouse=a
+"Show what you enter
+set showcmd
+"显示匹配当输入一个括号时
+set showmatch           
+"completion
+set dictionary=/usr/share/dict/words
+
+"set mapleader
+let mapleader = ","
+let g:mapleader = ","
+
+"Fast saving
+nnoremap <leader>w :w<cr>
+nnoremap <leader>W :w !sudo tee %<cr>
+nnoremap <leader>f :find<cr>
+
+"Enable syntax highlight
+set syntax=on
+set syntax=cpp
+
+
+"Show line number
+set number
+"The commandbar is 2 high
+set cmdheight=1
+"Always show current position
+set ruler
+
+"Ignore case when searching
+set ignorecase
+set infercase
+set hlsearch
+set incsearch
+
+"Show full tags when doing search completion
+set showfulltag
+
+"<C-p> style
+set completeopt=menu
+
+"Always show current position
+set ruler
+
+"The commandbar is 2 high
+set cmdheight=1
+
+" Stauesline
+set laststatus=2
+set statusline=
+set statusline+=%-3.3n
+"filename
+set statusline+=%F\  
+"flags
+set statusline+=%h%m%r%w
+set statusline+=%k
+" right align
+set statusline+=%=                           
+" current char
+"set statusline+=%2*0x%-8B\                   
+" offset
+set statusline+=%-10.(%l,%c%V%)\ %<%P        
+
+
+set autoindent
+set cindent
+
+" Taglist
+let Tlist_Use_Right_Window=1
+let Tlist_File_Fold_Auto_Close=1
+let Tlist_Show_Menu=1
+let Tlist_Exit_OnlyWindow=1
+
+"let Tlist_Show_One_File=1
+let Tlist_Compact_Format=1
+let Tlist_Enable_Fold_Column=0
+nnoremap <silent> <F8> :TlistToggle<CR>
+nnoremap <silent> <leader>tl :TlistToggle<CR>
+
+
+"Bash like
+cnoremap <C-A> <Home>
+cnoremap <C-E> <End>
+cnoremap <C-K> <C-U>
+
+noremap <space> <C-d>
+
+"Smart way to move btw. windows
+nnoremap <C-j> <C-W>j
+nnoremap <C-k> <C-W>k
+nnoremap <C-h> <C-W>h
+nnoremap <C-l> <C-W>l
+
+"Tab configuration
+nnoremap <leader>tn :tabnew <cr>
+nnoremap <leader>te :tabedit 
+nnoremap <leader>tc :tabclose<cr>
+nnoremap <leader>tm :tabmove 
+
+" cscope setting
+if has("cscope")
+  set csprg=/usr/bin/cscope
+  if has("quickfix")
+	  set cscopequickfix=s-,c-,d-,i-,t-,e-
+  endif
+  set nocscopetag
+  set cscopetagorder=0
+  set nocsverb
+  " add any database in current directory
+  if filereadable("cscope.out")
+      cs add cscope.out
+  endif
+endif
+
+nmap <C-a>s :cs find s <C-R>=expand("<cword>")<CR><CR>
+nmap <C-a>g :cs find g <C-R>=expand("<cword>")<CR><CR>
+nmap <C-a>c :cs find c <C-R>=expand("<cword>")<CR><CR>
+nmap <C-a>t :cs find t <C-R>=expand("<cword>")<CR><CR>
+nmap <C-a>e :cs find e <C-R>=expand("<cword>")<CR><CR>
+nmap <C-a>f :cs find f <C-R>=expand("<cfile>")<CR><CR>
+nmap <C-a>i :cs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
+nmap <C-a>d :cs find d <C-R>=expand("<cword>")<CR><CR>
+
+
+"Turn on Wild menu, Use the cool tab complete menu
+set wildmenu
+set wildignore+=*.o,*~
+set suffixes+=.in,.a
+
+filetype plugin indent on
+
+if has("autocmd")
+	autocmd Filetype java setlocal omnifunc=javacomplete#Complete
+	autocmd FileType python setlocal et sta sw=4 sts=4
+endif

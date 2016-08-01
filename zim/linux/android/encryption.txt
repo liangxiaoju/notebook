@@ -1,0 +1,63 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2016-03-29T10:29:02+08:00
+
+====== encryption ======
+Created Tuesday 29 March 2016
+
+* 说明：
+android 5.x与android 4.x相比，只是增加了第一次开机进行强制加密的支持
+android依然只支持userdata分区的加密,不支持多分区加密
+
+
+* 加密相关流程：
+
+在mount_all的时候会根据fstab的描述以及设备的加密状态相应地触发一些动作。
+
+## 一、第一次开机强制加密(需要定义forceencrypt=)
+
+	1. 触发"vold.decrypt=trigger_encryption", 通知vold进行加密
+   
+		on property:vold.decrypt=trigger_encryption
+			start surfaceflinger
+			start encrypt
+	   
+		# One shot invocation to encrypt unencrypted volumes
+		service encrypt /system/bin/vdc --wait cryptfs enablecrypto inplace default
+			disabled
+			oneshot
+
+	2. vold收到enablecrypto命令会执行加密动作
+
+	a. 触发"vold.decrypt=trigger_shutdown_framework"关闭framework
+	b. 把tmpfs挂在到/data目录
+	c. 触发"vold.decrypt=trigger_post_fs_data"对tmpfs的/data进行必要目录的创建
+	d. 触发"vold.decrypt=trigger_restart_min_framework"以启动一个简单的GUI用于显示加密相关信息
+	e. setprop vold.encrypt_progress '1' && setprop vold.encrypt_time_remaining '19' #通过设置这两个系统属性，告诉上层CryptKeeper.java加密进度
+	f. 对分区进行加密并把加密后的分区挂载起来
+	g. 触发"vold.decrypt=trigger_load_persist_props"
+	h. 触发"vold.decrypt=trigger_post_fs_data"重新对/data进行必要目录的创建
+	i. 触发"vold.decrypt=trigger_restart_framework"重新按正常流程启动framework
+
+
+
+## 二、已经加密的设备开机：
+
+	1. 触发"vold.decrypt=trigger_default_encryption", 通知vold进行解密
+
+		on property:vold.decrypt=trigger_default_encryption
+			start defaultcrypto
+
+		# One shot invocation to deal with encrypted volume.
+		service defaultcrypto /system/bin/vdc --wait cryptfs mountdefaultencrypted
+			disabled
+			oneshot
+
+	2. vold收到mountdefaultencrypted命令，判断是否需要用户输入密码
+
+	a. 加密分区使用的是"default_password"默认密码，直接启动framework
+			触发"vold.decrypt=trigger_restart_framework"
+
+	b. 加密分区使用的不是默认密码，需要用户输入
+			触发"vold.decrypt=trigger_restart_min_framework"启动mini GUI让用户输入密码
+

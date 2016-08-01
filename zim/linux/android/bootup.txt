@@ -80,7 +80,7 @@ init
 			throw new ZygoteInit.MethodAndArgsCaller(m, argv);
 	}
 
-** sevices/java/com/android/server/SystemServer.java **
+** services/java/com/android/server/SystemServer.java **
 	main() {
 		System.loadLibrary("android_servers");
 		init1(args);

@@ -1,0 +1,10 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2016-02-29T11:08:25+08:00
+
+====== note ======
+Created Monday 29 February 2016
+
+1. 选择encrypt phone以后，android会先进minui再进系统，这过程中有些rc里面的服务会被kill掉然后重启，如果这些rc服务是oneshot的，kill掉以后会重启不了。
+2. Portable Storage的名字显示优先顺序：分区的fsLabel，卡的Label，xml里定义的默认“SD card”。
+3. AP侧的rmt_storage服务如果没有运行起来，qcom modem侧会发生watchdog timeout。

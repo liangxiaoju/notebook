@@ -1,0 +1,168 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2016-02-26T11:36:17+08:00
+
+====== ubifs ======
+Created Friday 26 February 2016
+
+
+
+UBI文件系统简介
+在linux-2.6.27以前，谈到Flash文件系统，大家很多时候多会想到cramfs、jffs2、yaffs2等文件系统。它们也都是基于文件系
+统+mtd+flash设备的架构。linux-2.6.27后，内核加入了一种新型的flash文件系统UBI(Unsorted Block Images)。这里简单介绍下UBI文件系统加入的原因，及使用方法。我也是刚接触到这个文件系统，可能有理解不对的地方，也请指正。
+一、产生的背景
+FLASH具有的“先擦除再写入”、坏块、“有限的读写次数”等特性，目前管理FLASH的方法主要有：
+1、采用MTD+FTL／NFTL（flash 转换层／nand flash转换层）＋
+传统文件系统，如：FAT、ext2等。FTL／NFTL的使用就是针对FLASH的特有属性，通过软件的方式来实现日志管理、坏块管理、损益均衡等技
+术。但实践证明，由于知识产权、效率等各方面因素导致本方案有一定的局限性。
+2、采用硬件翻译层+传统文件系统的方案。这种方法被很多存储卡产品采用，如：SD卡、U盘等。这种方案对于一些产品来说，成本较高。
+3、采用MTD+ FLASH专用文件系统，如JFFS1／2，YAFFS1/2等。它们大大提高了FLASH的管理能力，并被广泛应用。
+JFFS2、YAFFS2等专用文件系统也存在着一些技术瓶颈，如：内存消耗大，对FLASH容量、文件系统大小、内容、访问模式等的线性依赖，损益均衡能力差或过渡损益等。在此背景下内核加入了UBI文件系统的支持。
+二、用法
+环境：omap3530处理器、 (128MByte 16 位NAND Flash) 、linnux-2.6.28内核
+1、配置内核支持UBIFS
+Device Drivers --->Memory Technology Device (MTD) support --->UBI - Unsorted block images --->Enable UBI
+配置mtd支持UBI接口
+File systems --->Miscellaneous filesystems --->UBIFS file system support
+配置内核支持UBIFS文件系统
+2、将一个MTD分区4挂载为UBIFS格式
+● flash_eraseall /dev/mtd4 //擦除mtd4
+● ubiattach /dev/ubi_ctrl -m 4 //和mtd4关联
+● ubimkvol /dev/ubi0 -N rootfs -s 100MiB //设定volume 大小（不是固定值，可以用工具改变）及名称
+● mount -t ubifs ubi0_0 /mnt/ubi或mount -t ubifs ubi0:rootfs /mnt/ubi
+3、制作UBIFS文件系统
+在制作UBI镜像时，需要首先确定以下几个参数：
+MTD partition size; //对应的FLASH分区大小
+flash physical eraseblock size; // FLASH物理擦除块大小
+minimum flash input/output unit size; //最小的FLASH输入输出单元大小
+for NAND flashes - sub-page size; //对于nand flash来说，子页大小
+logical eraseblock size.//逻辑擦除块大小
+参数可以由几种方式得到
+1）如果使用的是2.6.30以后的内核，这些信息可以通过工具从内核获得，如：mtdinfo –u。
+2）之前的内核可以通过以下方法：
+● MTD partition size：从内核的分区表或cat /proc/mtd获得
+● flash physical eraseblock size：从flash芯片手册中可以得到FLASH物理擦除块大小，或cat /proc/mtd
+● minimum flash input/output unit size：
+1）nor flash:通常是1个字节
+2）nand falsh：一个页面
+● sub-page size：通过flash手册获得
+● logical eraseblock size：对于有子页的NAND FLASH来说，等于“物理擦除块大小-1页的大小”
+3）也可以通过ubi和mtd连接时的产生的信息获取，如：
+#modprobe ubi mtd=4 //ubi作为模块加载
+或
+#ubiattach /dev/ubi_ctrl -m 4 //通过ubiattach关联MTD
+UBI: attaching mtd4 to ubi0
+UBI: physical eraseblock size: 131072 bytes (128 KiB)
+UBI: logical eraseblock size: 129024 bytes
+UBI: smallest flash I/O unit: 2048
+UBI: sub-page size: 512
+UBI: VID header offset: 512 (aligned 512)
+UBI: data offset: 2048
+UBI: attached mtd4 to ubi0
+更详细的解释参见http://www.linux-mtd.infradead.org/doc/ubi.html#L_overhead
+#mkfs.ubifs -r rootfs -m 2048 -e 129024 -c 812 -o ubifs.img
+#ubinize -o ubi.img -m 2048 -p 128KiB -s 512 /home/lht/omap3530/tools/ubinize.cfg
+-r：制定文件内容的位置
+-m：页面大小
+-e：逻辑擦除块大小
+-p：物理擦除块大小
+-c：最大的逻辑擦除块数量
+对我们这种情况，文件系统最多可以访问卷上的129024*812=100M空间
+-s：最小的硬件输入输出页面大小，如：k9f1208为256(上下半页访问)
+其中，ubinize.cfg的内容为：
+[ubifs]
+mode=ubi
+image=ubifs.img
+vol_id=0
+vol_size=100MiB
+vol_type=dynamic
+vol_name=rootfs
+vol_flags=autoresize
+4、利用uboot烧写、启动UBIFS镜像
+1）烧写UBIFS镜像
+OMAP3 DevKit8000 # mmcinit
+OMAP3 DevKit8000 # fatload mmc 0:1 81000000 ubi.img
+reading ubi.img
+12845056 bytes read
+OMAP3 DevKit8000 # nand unlock
+device 0 whole chip
+nand_unlock: start: 00000000, length: 268435456!
+NAND flash successfully unlocked
+OMAP3 DevKit8000 # nand ecc sw
+OMAP3 DevKit8000 # nand erase 680000 7980000
+NAND erase: device 0 offset 0x680000, size 0x7980000
+Erasing at 0x7fe0000 -- 100% complete.
+OK
+OMAP3 DevKit8000 # nand write.i 81000000 680000 $(filesize)
+NAND write: device 0 offset 0x680000, size 0xc40000
+Writing data at 0x12bf800 -- 100% complete.
+12845056 bytes written: OK
+烧写过程和烧写内核镜像的过程一致，所以UBI文件系统应该不像yaffs文件系统那样用到了nand的OOB区域。
+2）设置UBIFS文件系统作为根文件系统启动的参数
+OMAP3 DevKit8000 # setenv bootargs console=ttyS2,115200n8 ubi.mtd=4 root=ubi0:rootfs
+rootfstype=ubifs video=omapfb:mode:4.3inch_LCD
+OMAP3 DevKit8000 # setenv bootcmd nand read.i 80300000 280000 200000\;bootm 80300000
+根文件系统的位置在MTD4上
+系统启动时会打印出如下和UBI相关的信息：
+Creating 5 MTD partitions on "omap2-nand":
+0x00000000-0x00080000 : "X-Loader"
+0x00080000-0x00260000 : "U-Boot"
+0x00260000-0x00280000 : "U-Boot Env"
+0x00280000-0x00680000 : "Kernel"
+0x00680000-0x08000000 : "File System"
+UBI: attaching mtd4 to ubi0
+UBI: physical eraseblock size: 131072 bytes (128 KiB)
+UBI: logical eraseblock size: 129024 bytes
+UBI: smallest flash I/O unit: 2048
+UBI: sub-page size: 512
+UBI: VID header offset: 512 (aligned 512)
+UBI: data offset: 2048
+UBI: attached mtd4 to ubi0
+UBI: MTD device name: "File System"
+UBI: MTD device size: 121 MiB
+UBI: number of good PEBs: 970
+UBI: number of bad PEBs: 2
+UBI: max. allowed volumes: 128
+UBI: wear-leveling threshold: 4096
+UBI: number of internal volumes: 1
+UBI: number of user volumes: 1
+UBI: available PEBs: 0
+UBI: total number of reserved PEBs: 970
+UBI: number of PEBs reserved for bad PEB handling: 9
+UBI: max/mean erase counter: 2/0
+
+ 
+
+ 
+
+ 
+
+ 
+
+有了mkfs.ubifs和ubinize两个工具后，就可以制作UBIFS镜像了，具体步骤如下：
+
+1. 使用mkfs.ubifs命令将某个文件夹制作为__UBIFS镜像__，具体命令为：
+
+	mkfs.ubifs -r/tmp/rootfs-m 2048 -e 126976-c 992 -o ubifs.img
+
+以上命令的含义为将/tmp/rootfs文件夹制作为UBIFS文件系统镜像，输出的镜像名为ubifs.img，-m参数指定了最小的I/O操作的大小，也就是NAND FLASH一个page的大小，-e参数指定了逻辑擦除快的大小，-c指定了最大的逻辑块号。
+
+通过此命令制作的出的UBIFS文件系统镜像可在u-boot下使用ubi write命令烧写到NAND FLASH上。
+
+2. 使用ubinize命令可将使用mkfs.ubifs命令制作的UBIFS文件系统镜像转换成可直接在FLASH上烧写的格式（带有UBI文件系统镜像卷标）__UBI镜像__：
+
+	ubinize -o ubi.img-m 2048 -p 128KiB-s 512 -O 2048 ubinize.cfg
+
+ubinize.cfg为一些配置参数：
+
+	[ubifs]
+	mode=ubi
+	image=ubifs.img
+	vol_id=0
+	vol_size=100MiB
+	vol_type=dynamic
+	vol_alignment=1
+	vol_name=rootfs
+	vol_flags=autoresize
+
+通过此命令生成的ubi.img可直接使用NAND FLASH的烧写命令烧写到FLASH上。

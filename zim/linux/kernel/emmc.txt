@@ -23,7 +23,7 @@ erase group size:
 	if ext_csd[EXT_CSD_ERASE_GROUP_DEF] & 0x01:
 		erase_size = ext_csd[EXT_CSD_HC_ERASE_GRP_SIZE] * 512KB
 	else:
-		erase_size = (ext_csd[ERASE_GRP_SIZE] + 1) * (ext_csd[ERASE_GRP_MULT] + 1) * write_block_size
+		erase_size = (csd[ERASE_GRP_SIZE] + 1) * (csd[ERASE_GRP_MULT] + 1) * write_block_size
 
 write protect group size:
 	WP_GRP_SIZE [36:32]
@@ -32,7 +32,7 @@ write protect group size:
 	if ext_csd[EXT_CSD_HC_ERASE_GRP_SIZE] & 0x01:
 		wp_group_size = ext_csd[HC_WP_GRP_SIZE] * erase_size
 	else:
-		wp_group_size = (ext_csd[WP_GRP_SIZE] + 1) * erase_size
+		wp_group_size = (csd[WP_GRP_SIZE] + 1) * erase_size
 
 can use 'mmc_switch' to transfer between original mode and hc mode:
 	err = mmc_switch(card, EXT_CSD_CMD_SET_NORMAL,

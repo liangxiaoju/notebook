@@ -1,0 +1,58 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2016-03-31T11:22:41+08:00
+
+====== 0001 ======
+Created Thursday 31 March 2016
+
+TAGS: init static map
+
+#include "stdafx.h"
+#include <map>
+#include <Windows.h>
+
+typedef enum ColorType
+{
+	COLOR_RED,
+	COLOR_GREEN,
+	COLOR_BLUE,
+	COLOR_WHITE,
+	COLOR_BLACK
+};
+class CFindColor
+{
+public:
+	static COLORREF GetColor(ColorType color)
+	{
+		std::map<ColorType, COLORREF>::const_iterator finder = m_mapColor.find(color);
+		if (finder != m_mapColor.end())
+		{
+			return finder->second;
+		}
+		else
+		{
+			return RGB(240, 240, 240);
+		}
+	}
+private:
+	static std::map<ColorType, COLORREF> CreateColorMap()
+	{
+		std::map<ColorType, COLORREF> mapColor;
+		mapColor[COLOR_RED]     = RGB(255, 0, 0);
+		mapColor[COLOR_GREEN]   = RGB(0, 255, 0);
+		mapColor[COLOR_BLUE]    = RGB(0, 0, 255);
+		return mapColor;
+	}
+	static const std::map<ColorType, COLORREF> m_mapColor;
+
+};
+const std::map<ColorType, COLORREF> CFindColor::m_mapColor = CFindColor::CreateColorMap();
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+	COLORREF colorRed = CFindColor::GetColor(COLOR_RED);
+	COLORREF colorGreen = CFindColor::GetColor(COLOR_GREEN);
+	COLORREF colorTemp = CFindColor::GetColor(COLOR_WHITE);
+
+	return 0;
+}

@@ -1,0 +1,56 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2016-07-06T11:17:46+08:00
+
+====== MediaScanner ======
+Created Wednesday 06 July 2016
+
+packages/providers/MediaProvider/src/com/android/providers/media/MediaScannerService.java
+	scan
+		sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_STARTED, uri));
+		MediaScanner::scanDirectories
+		sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_FINISHED, uri));
+
+frameworks/base/media/java/android/media/MediaScanner.java
+	native_setup (native)
+
+	scanDirectories
+		prescan
+		processDirectory (native)
+		postscan
+
+frameworks/base/media/jni/android_media_MediaScanner.cpp
+	native_setup
+		new StagefrightMediaScanner : public MediaScanner
+
+	processDirectory
+		StagefrightMediaScanner::processDirectory(path, myClient)
+
+frameworks/av/media/libmedia/MediaScanner.cpp
+frameworks/av/media/libstagefright/StagefrightMediaScanner.cpp
+	processDirectory
+		MyMediaScannerClient::scanFile (android_media_MediaScanner.cpp)
+
+frameworks/base/media/jni/android_media_MediaScanner.cpp
+	MyMediaScannerClient : public MediaScannerClient
+		scanFile
+			scanFile (java in MediaScanner::MyMediaScannerClient)
+
+frameworks/base/media/java/android/media/MediaScanner.java
+	scanFile
+		beginFile
+		processFile (native)
+		endFile
+
+frameworks/base/media/jni/android_media_MediaScanner.cpp
+	processFile
+		MyMediaScannerClient::handleStringTag (cpp)
+			MyMediaScannerClient::handleStringTag (java)
+		MyMediaScannerClient::setMimeType (cpp)
+			MyMediaScannerClient::setMimeType (java)
+
+frameworks/base/media/java/android/media/MediaScanner.java
+	MyMediaScannerClient::handleStringTag
+	MyMediaScannerClient::setMimeType
+
+{{./MediaScan.png}}
