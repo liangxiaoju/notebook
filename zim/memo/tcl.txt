@@ -18,7 +18,9 @@ Created Thursday 30 April 2015
 	android-bld@10.128.180.54 mobile#5
 	android-bld@10.128.180.29 mobile#5
 	android-bld@10.128.161.97 mobile#3
-*
+	android@10.129.46.19 Gcs@123
+
+* password
 	*#22384#*
 
 * EngineerMode
@@ -27,3 +29,11 @@ Created Thursday 30 April 2015
 * teleweb
 	temp
 	temp123
+
+* wifi
+	9123456789
+
+* fota
+	android@10.128.180.21
+	mobile#3
+

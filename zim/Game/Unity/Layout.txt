@@ -1,0 +1,10 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2018-10-30T17:05:33+08:00
+
+====== Layout ======
+Created Tuesday 30 October 2018
+
+**ContentSizeFitter** 只是把ILayoutElement的MinSize/PreferredSize/FlexibleSize设置到RectTransform中
+
+**HorizontalLayoutGroup** 当设置childControlWidth=true时，会根据child中ILayoutElement信息去设置child的RectTransform，并使用RectTransform的信息进行排列

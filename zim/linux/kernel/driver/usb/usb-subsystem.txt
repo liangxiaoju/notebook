@@ -58,10 +58,11 @@ USB博大精深，不是一两篇博文能够解释清楚的。想要深入研�
 
   终端下输入命令  # ls /sys/bus/usb/devices
 
-    usb1
-    1-0:1.0
-    usb2
-    2-0:1.0   // USB总线(RootHub) No.2，USB port端口号No.0，配置号No.1，接口号No.0。
+	usb1
+	1-0:1.0
+	usb2
+	2-0:1.0   // USB总线(RootHub) No.2，USB port端口号No.0，配置号No.1，接口号No.0。
+	2-0.1:1.0  // 如果No.0 port上面接入hub，hub上面的端口号就会变成0.x。
 
 * 区别port和endpoint，port之于hub，endpoint是每个USB设备用于数据传输所必需的端点。
 * 设备device>配置configure>接口interface>设置setting>端点endpoint。
@@ -180,13 +181,13 @@ usb_control_msg() => usb_internal_control_msg() => usb_start_wait_urb() => usb_s
 
 处理hub事件的全过程大致可分为两步，
 
-    * 第一步 判断端口状态的变化
+	* 第一步 判断端口状态的变化
 
 通过hub_port_status()得到hub端口的状态。
 
 源码里类似像hub_port_status(), hub_hub_status()等功能函数，都调用了核心层的usb_control_msg()去实现主控制器与USB设备间的通信。
 
-    * 第二步 处理端口的变化
+	* 第二步 处理端口的变化
 
 hub_port_connect_change()是核心函数，以端口发现有新的USB设备插入为例，USB Hub为USB设备做了以下几步重要的工作，注意这里所谓的USB设备是指插入USB Hub的外接USB设备(包括Hub和Functions)，接下来Hub都在为USB设备服务。
 
@@ -214,9 +215,9 @@ __3. USB OTG__
 
  OTG的传输协议有三类 - ADP,SRP,HNP。
 
-    * ADP(Attach Detection Protocol) 当USB总线上没有供电时，ADP允许OTG设备或USB设备决定连接状态。
-    * SRP(Session Request Protocol) 允许从设备也可以控制主设备。
-    * HNP(Host Negotiation Protocol) 允许两个设备互换主从角色。 
+	* ADP(Attach Detection Protocol) 当USB总线上没有供电时，ADP允许OTG设备或USB设备决定连接状态。
+	* SRP(Session Request Protocol) 允许从设备也可以控制主设备。
+	* HNP(Host Negotiation Protocol) 允许两个设备互换主从角色。 
 
 2) Device role
 
@@ -260,10 +261,10 @@ __5. USB Gadget__
 
   驱动主要有，
 
-    * 平台相关的Gadget控制器驱动
-    * 平台无关的复用设备驱动composite.c
-    * android平台的复用设备驱动android.c
-    * adb驱动f_adb.c，U盘驱动f_mass_storage.c等一些复用的USB驱动
+	* 平台相关的Gadget控制器驱动
+	* 平台无关的复用设备驱动composite.c
+	* android平台的复用设备驱动android.c
+	* adb驱动f_adb.c，U盘驱动f_mass_storage.c等一些复用的USB驱动
 
   数据结构主要有，
 

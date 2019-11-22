@@ -1,0 +1,40 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2017-04-20T17:37:26+08:00
+
+====== Certificate ======
+Created Thursday 20 April 2017
+
+Windows/Linux 生成iOS证书及p12文件
+操作步骤
+
+	生成csr文件（通过OpenSSL命令）
+	生成mobileprovision文件（通过Apple开发者后台）
+	生成cer文件（通过Apple开发者后台）
+	生成P12文件（通过OpenSSL命令）
+
+生成csr文件
+
+# 用到 Windows 或者 Linux 下的 openssl 命令，请自行安装。
+openssl genrsa -out ios.key 2048
+openssl req -new -sha256 -key ios.key -out ios.csr
+
+生成mobileprovision文件
+
+	比较简单，登录开发者后台，提交信息（需要用到前面生成的csr文件），下载。
+	https://developer.apple.com/account/ios/profile/
+
+生成cer文件
+
+	比较简单，登录开发者后台，提交信息（需要用到前面生成的csr文件），下载。
+	https://developer.apple.com/account/ios/certificate/
+
+生成P12文件
+
+# 需要用到第一步生成的 ios.key 文件，以及 Apple 生成的 ios_distribution.cer 和 ios_development.cer 文件。
+openssl x509 -in ios_distribution.cer -inform DER -outform PEM -out ios_distribution.pem
+openssl pkcs12 -export -inkey ios.key -in ios_distribution.pem -out ios_distribution.p12
+
+openssl x509 -in ios_development.cer -inform DER -outform PEM -out ios_development.pem
+openssl pkcs12 -export -inkey ios.key -in ios_development.pem -out ios_development.p12
+

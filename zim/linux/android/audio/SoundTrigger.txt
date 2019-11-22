@@ -1,0 +1,193 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2019-03-22T16:22:27+08:00
+
+====== SoundTrigger ======
+Created Friday 22 March 2019
+
+==== Path: ====
+'''
+	frameworks/base/core/java/android/app
+		VoiceInteractor.java
+		/**
+		 * Interface for an {@link Activity} to interact with the user through voice.  Use
+		 * {@link android.app.Activity#getVoiceInteractor() Activity.getVoiceInteractor}
+		 * to retrieve the interface, if the activity is currently involved in a voice interaction.
+		 *
+		 * <p>The voice interactor revolves around submitting voice interaction requests to the
+		 * back-end voice interaction service that is working with the user.  These requests are
+		 * submitted with {@link #submitRequest}, providing a new instance of a
+		 * {@link Request} subclass describing the type of operation to perform -- currently the
+		 * possible requests are {@link ConfirmationRequest} and {@link CommandRequest}.
+		 *
+		 * <p>Once a request is submitted, the voice system will process it and eventually deliver
+		 * the result to the request object.  The application can cancel a pending request at any
+		 * time.
+		 *
+		 * <p>The VoiceInteractor is integrated with Activity's state saving mechanism, so that
+		 * if an activity is being restarted with retained state, it will retain the current
+		 * VoiceInteractor and any outstanding requests.  Because of this, you should always use
+		 * {@link Request#getActivity() Request.getActivity} to get back to the activity of a
+		 * request, rather than holding on to the activity instance yourself, either explicitly
+		 * or implicitly through a non-static inner class.
+		 */
+
+	frameworks/base/core/java/com/android/internal/app
+		IVoiceInteractor.aidl
+		IVoiceInteractorRequest.aidl
+		IVoiceInteractorCallback.aidl
+		/**
+		 * IPC interface for an application to perform calls through a VoiceInteractor.
+		 */
+
+	frameworks/base/core/java/android/service/voice/
+		VoiceInteractionService.java
+		/**
+		 * Top-level service of the current global voice interactor, which is providing
+		 * support for hotwording, the back-end of a {@link android.app.VoiceInteractor}, etc.
+		 * The current VoiceInteractionService that has been selected by the user is kept
+		 * always running by the system, to allow it to do things like listen for hotwords
+		 * in the background to instigate voice interactions.
+		 *
+		 * <p>Because this service is always running, it should be kept as lightweight as
+		 * possible.  Heavy-weight operations (including showing UI) should be implemented
+		 * in the associated {@link android.service.voice.VoiceInteractionSessionService} when
+		 * an actual voice interaction is taking place, and that service should run in a
+		 * separate process from this one.
+		 */
+
+	frameworks/base/services/voiceinteraction/java/com/android/server/voiceinteraction
+		VoiceInteractionManagerService.java
+		/**
+		 * SystemService that publishes an IVoiceInteractionManagerService.
+		 */
+
+	frameworks/base/services/voiceinteraction/java/com/android/server/soundtrigger
+		SoundTriggerService.java
+		/**
+		 * A single SystemService to manage all sound/voice-based sound models on the DSP.
+		 * This services provides apis to manage sound trigger-based sound models via
+		 * the ISoundTriggerService interface. This class also publishes a local interface encapsulating
+		 * the functionality provided by {@link SoundTriggerHelper} for use by
+		 * {@link VoiceInteractionManagerService}.
+		 *
+		 * @hide
+		 */
+		publishBinderService(Context.SOUND_TRIGGER_SERVICE, mServiceStub);
+		publishLocalService(SoundTriggerInternal.class, mLocalSoundTriggerService);
+
+	frameworks/base/core/java/android/hardware/soundtrigger
+		#JAVA
+
+	frameworks/base/core/jni/android_hardware_SoundTrigger.cpp
+		#JNI
+
+	frameworks/av/soundtrigger
+		# soundtrigger client API
+		libsoundtrigger.so
+
+	frameworks/av/media/audioserver
+		# bring up SoundTriggerHwService
+		SoundTriggerHwService::instantiate();
+
+	frameworks/av/services/soundtrigger
+		# impl SoundTriggerHwService
+
+		# SoundTriggerHwService impl interface:ISoundTriggerHwService
+		listModules()
+		attach()
+		setCaptureState()
+'''
+
+
+==== Data Structure: ====
+'''
+	class SoundTriggerHwService : public BnSoundTriggerHwService
+	{
+		// ISoundTriggerHwService
+		listModules();
+		attach();
+		setCaptureState();
+
+		class Module {
+		   loadSoundModel();
+		   unloadSoundModel();
+		   startRecognition();
+		   stopRecognition();
+		};
+
+		class ModuleClient : public BnSoundTrigger {
+		   loadSoundModel();
+		   unloadSoundModel();
+		   startRecognition();
+		   stopRecognition();
+		};
+	};
+
+	class SoundTrigger : public BnSoundTriggerClient {
+		// to SoundTriggerHwService
+		listModules();
+		attach();
+		setCaptureState();
+
+		// to SoundTriggerHwService::ModuleClient
+		loadSoundModel();
+		unloadSoundModel();
+		startRecognition();
+		stopRecognition();
+
+		// from SoundTriggerHwService::ModuleClient
+		// BpSoundTriggerClient
+		onRecognitionEvent();
+		onSoundModelEvent();
+		onServiceStateChange();
+	};
+'''
+
+
+==== Data Flow: ====
+'''
+	SoundTrigger::listModules -> SoundTriggerHwService
+
+	SoundTrigger::attach -> SoundTriggerHwService return ModuleClient
+
+	SoundTrigger::loadSoundModel
+		-> ModuleClient::loadSoundModel
+			-> Module::loadSoundModel
+				-> SoundTriggerHalInterface::loadSoundModel
+					HAL
+				<- SoundTriggerHwService::soundModelCallback
+			<- Module::onCallbackEvent
+		<- ModuleClient::onCallbackEvent
+	<- SoundTrigger::onSoundModelEvent
+
+	SoundTrigger::startRecognition
+		-> ModuleClient::startRecognition
+			-> module::startRecognition
+				-> SoundTriggerHalInterface::startRecognition
+					HAL
+				<- SoundTriggerHwService::recognitionCallback
+			<- Module::onCallbackEvent
+		<- ModuleClient::onCallbackEvent
+	<- SoundTrigger::onRecognitionEvent
+'''
+
+
+==== MTK HAL ====
+'''
+	vendor/mediatek/proprietary/hardware/soundtrigger/sound_trigger_hw.cpp
+	
+	struct sound_trigger_module HAL_MODULE_INFO_SYM = {
+		.common = {
+		    .tag = HARDWARE_MODULE_TAG,
+		    .module_api_version = SOUND_TRIGGER_MODULE_API_VERSION_1_0,
+		    .hal_api_version = HARDWARE_HAL_API_VERSION,
+		    .id = SOUND_TRIGGER_HARDWARE_MODULE_ID,
+		    .name = "MTK Audio HW HAL",
+		    .author = "MTK",
+		    .methods = &hal_module_methods,
+		    .dso = NULL,
+		    .reserved = {0},
+		},
+	};
+'''

@@ -7,29 +7,29 @@ Created 星期五 10 八月 2012
 
 TAGS: shortcutkeys
 
-* 宏定义跳转
+** 宏定义跳转 **
   C-c C-u
   C-c C-p
   C-c C-n
 
-* 函数跳转
+** 函数跳转 **
   C-M-a : 函数开始
   C-M-e : 函数结束
 
-* 缩进
+** 缩进 **
   C-c C-q : 缩进当前function,class...
 
-* 注释
+** 注释 **
   C-c C-c : 对选中区域注释
   C-u C-c C-c : 去掉选中区域的注释
   M-; : 在当前行尾添加注释
   C-u M-; : 去掉当前行的注释
 
-* 大小写
+** 大小写 **
   M-u : 转换成大写
   M-l : 转换成小写
 
-* git
+** git **
   C-x v l : 当前文件的log
   C-x v L : 当前git root目录的log
 
@@ -43,25 +43,45 @@ TAGS: shortcutkeys
   e
 
   C-x v I
-      Display the changes that a pull operation will retrieve (vc-log-incoming).
+	  Display the changes that a pull operation will retrieve (vc-log-incoming).
   C-x v O
-      Display the changes that will be sent by the next push operation (vc-log-outgoing).
+	  Display the changes that will be sent by the next push operation (vc-log-outgoing).
 
-* 标记
+** 标记 **
   C-@ : 标记文本块的开始或结束
   Esc h : 标记段落
   C-x C-p : 标记页面
   C-x h : 标记整个缓冲区
   C-x C-x : 互换插入点与文本标记的位置
 
-* 交换
+** 交换 **
   C-t : 当前光标所在字符与前一个字符对换
   Esc t / M-t : 单词交换
   C-x C-t : 行交换
 
-* 切换状态
+** 切换状态 **
   toggle-read-only [C-x C-q] 切换当前缓冲区的可写状态
 
-* 自动补全
+** 自动补全 **
   M-tab
 
+** 通过Mark Ring返回当前buffer的上一个位置 **
+  C-. C-. 或者 C-@ C-@ 把位置放在Mark Ring中
+  C-u C-. 或者 C-u C-@ 返回Mark Ring中记录的最后一个位置 (C-u C-. C-. 依次返回上一个位置)
+  C-x C-. 全局返回上一个位置
+
+** 通过Registers 记录/恢复 位置 **
+  point-to-register C-x r <SPC>
+  jump-to-register C-x r j
+
+** 纵向编辑 **
+  C-x <SPC>
+
+** GDB DEBUG **
+  compile/recompile
+  gdb/gdb-many-windows
+
+** 字符编码 **
+   设置显示中文
+   revert-buffer-with-coding-system chinese-gbk-dos
+   prefer-coding-system chinese-gbk-dos

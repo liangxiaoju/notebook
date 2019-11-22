@@ -1,0 +1,8 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2018-09-03T17:03:51+08:00
+
+====== screenrecord ======
+Created Monday 03 September 2018
+
+adb shell screenrecord --output-format=h264 - | mplayer -demuxer lavf -

@@ -1,0 +1,34 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2018-06-22T16:04:23+08:00
+
+====== build ======
+Created Friday 22 June 2018
+
+nonhlos building command:
+
+	a. sbl1编译：
+	cd <target_root>/boot_images/build/ms
+	./build.sh TARGET_FAMILY=8909 --prod
+	b. Rpm编译：
+	cd <target_root>\rpm_proc\build
+	./build_8909.sh
+	c. Tz编译：
+	cd <target_root>/trustzone_images/build/ms
+	./build.sh CHIPSET=msm8909 tz sampleapp tzbsp_no_xpu playready widevine isdbtmm aostlm securitytest keymaster commonlib
+	d. Modem编译：
+	cd <target_root>/modem_proc/build/ms
+	./build.sh 8909.gen.prod -k
+	e. Non-HLOS合成
+	cd <target_root>/common/build
+	python update_common_info.py --nonhlos
+	f. image输出目录如下：
+	./nonhlos/common/build/patch0.xml
+	./nonhlos/common/build/rawprogram0.xml
+	./nonhlos/common/build/gpt_main0.bin
+	./nonhlos/common/build/gpt_backup0.bin
+	./nonhlos/boot_images/build/ms/bin/8909/emmc/sbl1.mbn
+	./nonhlos/trustzone_images/build/ms/bin/MAZAANAA/tz.mbn
+	./nonhlos/rpm_proc/build/ms/bin/8909/pm8909/rpm.mbn
+	./nonhlos/common/build/bin/asic/NON-HLOS.bin
+	./nonhlos/common/tools/sectools/resources/build/sec.dat

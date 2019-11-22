@@ -1,0 +1,1815 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+    
+    <html xmlns="http://www.w3.org/1999/xhtml">
+    
+<head>          
+            <link rel="canonical" href="http://blog.csdn.net/ring0hx/article/details/46440037"/> 
+
+   
+
+  
+ <meta http-equiv="Cache-Control" content="no-siteapp" /><link rel="alternate" media="handheld" href="#" />
+
+    <meta name="shenma-site-verification" content="5a59773ab8077d4a62bf469ab966a63b_1497598848"> 
+       
+    <title>Unity3D Shader 入门 - 悦峰原创博客
+        - CSDN博客</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="description" content="Shader的种类Unity Shader 是将传统的硬件Shader（由 Cg / HLSL编写）嵌入到独有的描述性结构中而形成的一种代码生成框架，最终会自动生成各硬件平台自己的Shader，从而实现跨平台。Unity Shader 分为 表面着色器（Surface Shader）和 顶点片段着色器（Vertex And Fragment Shader）。表面着色器（Surface Shader" />
+
+    <meta name="keywords" content="Unity,Shader" />
+
+   
+    <script src="http://static.blog.csdn.net/scripts/blog_static_head.min.js" type="text/javascript"></script>
+
+    
+        <!--new top-->
+       
+       
+        <!--new top-->
+    
+      <!-- ad begin -->
+         
+    <!-- ad end-->
+
+    <link rel="Stylesheet" type="text/css" href="http://static.blog.csdn.net/skin/default/css/style.css?v=1.1" />
+
+    
+
+    <link id="RSSLink" title="RSS" type="application/rss+xml" rel="alternate" href="/ring0hx/rss/list" />
+    <link rel="shortcut icon" href="http://c.csdnimg.cn/public/favicon.ico" />
+    <link type="text/css" rel="stylesheet" href="http://static.blog.csdn.net/scripts/SyntaxHighlighter/styles/default.css" />
+ 
+
+
+
+    <link href="http://c.csdnimg.cn/blog/csdn_public_blog_detail.min.css" type="text/css" rel="stylesheet" />
+     
+         <link rel="stylesheet" href="http://static.blog.csdn.net/css/csdn_blog_detail.min.css" />
+
+  
+
+
+    <!-- 请置于所有广告位代码之前 --> 
+            <script src="http://dup.baidustatic.com/js/ds.js"></script>
+
+</head>
+
+
+<body>  
+     
+        <div class="tracking-ad" data-view="true" data-mod="ad_popu_72"  data-mtp="62" data-order="40" data-con="ad_content_2072" >
+                     <script id="popuLayer_js_q" src="http://ads.csdn.net/js/popuLayer.js" defer="defer"  type="text/javascript"></script>
+                <div id="layerd" style="position: fixed;bottom:0px;right:0px;line-height:0px;z-index:1000">
+    	                <div class="J_close layer_close" style="display:;background-color:#efefef;padding:0px;color:#333;font:12px/24px Helvetica,Tahoma,Arial,sans-serif;text-align:right;">关闭</div><!-- 广告占位容器 -->
+                    <div id="cpro_u2895327">
+                        <!-- 投放代码 -->
+                        <script src="http://dup.baidustatic.com/js/ds.js"></script>
+                       <!-- 广告位：PC端-博客详情页右侧弹窗-300*250 -->
+                            <script>
+                                (function () {
+                                    var s = "_" + Math.random().toString(36).slice(2);
+                                    document.write('<div id="' + s + '"></div>');
+                                    (window.slotbydup = window.slotbydup || []).push({
+                                        id: '4740870',
+                                        container: s,
+                                        size: '300,250',
+                                        display: 'inlay-fix'
+                                    });
+                                })();
+                            </script>
+                    </div></div>
+                <script>  document.getElementById("popuLayer_js_q").onload = function () {
+      var styObjd = styObj = { width: "300px", "height": parseInt(250) + 28 };
+      window.CSDN.Layer.PopuLayer("#layerd", { storageName: "layerd", styleObj: styObjd, total: 50, expoire: 1000 * 60 });
+  }</script>
+            
+     
+        </div>
+
+    <!-- 广告位开始 -->
+        
+    <!-- 广告位结束 -->
+
+    
+   
+      <!--new top-->
+    <script id="toolbar-tpl-scriptId" fixed="true" prod="blog" skin="black" src="http://c.csdnimg.cn/public/common/toolbar/js/html.js" type="text/javascript"></script>
+     <!--new top-->
+    <div id="container">
+        <div id="header">
+    <div class="header">
+        <div id="blog_title">
+            <h2>
+                <a href="http://blog.csdn.net/ring0hx">悦峰原创博客</a></h2>
+            <h3></h3>
+            <div class="clear">
+            </div>
+        </div>
+        <div class="clear">
+        </div>
+        
+     
+    </div>
+</div>
+<div id="navigator">
+    <div class="navigator_bg">
+    </div>
+    <div class="navigator">
+        <ul>           
+                <li id="btnContents"><a href="http://blog.csdn.net/ring0hx?viewmode=contents"><span onclick="_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_mulu'])">
+                    <img src="http://static.blog.csdn.net/images/ico_list.gif">目录视图</span></a></li>
+                <li id="btnView"><a href="http://blog.csdn.net/ring0hx?viewmode=list"><span onclick="_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_zhaiyao'])">
+                    <img src="http://static.blog.csdn.net/images/ico_summary.gif">摘要视图</span></a></li>
+                <li id="btnRss"><a href="http://blog.csdn.net/ring0hx/rss/list"><span onclick="_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_RSS'])">
+                    <img src="http://static.blog.csdn.net/images/ico_rss.gif">订阅</span></a></li>                
+            
+
+            </ul>
+    </div>
+</div>
+<script type="text/javascript">
+    var username = "ring0hx";
+    var _blogger = username;
+    var blog_address = "http://blog.csdn.net/ring0hx";
+    var static_host = "http://static.blog.csdn.net";
+    var currentUserName = "";  
+</script>
+
+        <div id="body">
+            <div id="main">
+                <div class="main">
+                        <div class="ad_class">
+<div class="notice tracking-ad" data-mod='popu_3' > 
+
+
+<a href="http://blog.csdn.net/epubit17/article/details/78038722">
+<font color=red><strong>异步赠书：9月重磅新书升级，本本经典</strong></font></a>
+
+&nbsp;&nbsp;&nbsp;&nbsp
+
+<a href="http://blog.csdn.net/blogdevteam/article/details/78105371">
+<font color=blue><strong>CSDN新版博客内测群495397560期待你加入</strong></font></a>
+
+&nbsp;&nbsp;&nbsp;&nbsp
+
+<a href="http://blog.csdn.net/turingbooks/article/details/78017356">
+<font color=blue><strong>程序员9月书讯</strong></font></a>
+
+&nbsp;&nbsp;&nbsp;&nbsp
+
+
+<a href="http://blog.csdn.net/broadview2006/article/details/78018836">
+<font color=red><strong>每周荐书：ES6、虚拟现实、物联网（评论送书）</strong></font></a>
+
+
+
+</div>                        </div>
+
+                        
+
+
+
+  
+
+
+
+
+
+
+<script   type="text/javascript" src="http://static.blog.csdn.net/scripts/category.js"></script>
+
+  <script type="text/ecmascript">
+      window.quickReplyflag = true;
+      var isBole = false; 
+      var fasrc="http://my.csdn.net/my/favorite/miniadd?t=Unity3D+Shader+%e5%85%a5%e9%97%a8&u=http://blog.csdn.net/ring0hx/article/details/46440037"
+    </script>
+<div id="article_details" class="details">
+    <div class="article_title">   
+         <span class="ico ico_type_Original"></span>
+
+    <h1>
+        <span class="link_title"><a href="/ring0hx/article/details/46440037">
+        Unity3D Shader 入门        
+           
+        </a>
+        </span>
+
+         
+    </h1>
+</div>
+
+   
+
+        <div class="article_manage clearfix">
+        <div class="article_l">
+            <span class="link_categories">
+            标签：
+              <a href='http://www.csdn.net/tag/Unity' target=_blank onclick="_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_tag']);">Unity</a><a href='http://www.csdn.net/tag/Shader' target=_blank onclick="_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_tag']);">Shader</a>
+            </span>
+        </div>
+        <div class="article_r">
+            <span class="link_postdate">2015-06-10 17:32</span>
+            <span class="link_view" title="阅读次数">9804人阅读</span>
+            <span class="link_comments" title="评论次数"> <a href="#comments" onclick="_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_pinglun'])">评论</a>(2)</span>
+            <span class="link_collect tracking-ad" data-mod="popu_171"> <a href="javascript:void(0);" onclick="javascript:collectArticle('Unity3D+Shader+%e5%85%a5%e9%97%a8','46440037');return false;" title="收藏">收藏</a></span>
+             <span class="link_report"> <a href="#report" onclick="javascript:report(46440037,2);return false;" title="举报">举报</a></span>
+
+        </div>
+    </div>    <style type="text/css">        
+            .embody{
+                padding:10px 10px 10px;
+                margin:0 -20px;
+                border-bottom:solid 1px #ededed;                
+            }
+            .embody_b{
+                margin:0 ;
+                padding:10px 0;
+            }
+            .embody .embody_t,.embody .embody_c{
+                display: inline-block;
+                margin-right:10px;
+            }
+            .embody_t{
+                font-size: 12px;
+                color:#999;
+            }
+            .embody_c{
+                font-size: 12px;
+            }
+            .embody_c img,.embody_c em{
+                display: inline-block;
+                vertical-align: middle;               
+            }
+             .embody_c img{               
+                width:30px;
+                height:30px;
+            }
+            .embody_c em{
+                margin: 0 20px 0 10px;
+                color:#333;
+                font-style: normal;
+            }
+    </style>
+    <script  type="text/javascript">
+        $(function () {
+            try
+            {
+                var lib = eval("("+$("#lib").attr("value")+")");
+                var html = "";
+                if (lib.err == 0) {
+                    $.each(lib.data, function (i) {
+                        var obj = lib.data[i];
+                        //html += '<img src="' + obj.logo + '"/>' + obj.name + "&nbsp;&nbsp;";
+                        html += ' <a href="' + obj.url + '" target="_blank">';
+                        html += ' <img src="' + obj.logo + '">';
+                        html += ' <em><b>' + obj.name + '</b></em>';
+                        html += ' </a>';
+                    });
+                    if (html != "") {
+                        setTimeout(function () {
+                            $("#lib").html(html);                      
+                            $("#embody").show();
+                        }, 100);
+                    }
+                }      
+            } catch (err)
+            { }
+            
+        });
+    </script>
+      <div class="category clearfix">
+        <div class="category_l">
+           <img src="http://static.blog.csdn.net/images/category_icon.jpg">
+            <span>分类：</span>
+        </div>
+        <div class="category_r">
+                    <label  onclick="GetCategoryArticles('927668','ring0hx','top','46440037');">
+                        <span onclick="_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_fenlei']);">游戏开发<em>（14）</em></span>
+                      <img class="arrow-down" src="http://static.blog.csdn.net/images/arrow_triangle _down.jpg" style="display:inline;">
+                      <img class="arrow-up" src="http://static.blog.csdn.net/images/arrow_triangle_up.jpg" style="display:none;">
+                        <div class="subItem">
+                            <div class="subItem_t"><a  href="http://blog.csdn.net/ring0hx/article/category/927668"  target="_blank">作者同类文章</a><i class="J_close">X</i></div>
+                            <ul class="subItem_l" id="top_927668">                            
+                            </ul>
+                        </div>
+                    </label>                    
+                    <label  onclick="GetCategoryArticles('1170121','ring0hx','top','46440037');">
+                        <span onclick="_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_fenlei']);">Unity<em>（3）</em></span>
+                      <img class="arrow-down" src="http://static.blog.csdn.net/images/arrow_triangle _down.jpg" style="display:inline;">
+                      <img class="arrow-up" src="http://static.blog.csdn.net/images/arrow_triangle_up.jpg" style="display:none;">
+                        <div class="subItem">
+                            <div class="subItem_t"><a  href="http://blog.csdn.net/ring0hx/article/category/1170121"  target="_blank">作者同类文章</a><i class="J_close">X</i></div>
+                            <ul class="subItem_l" id="top_1170121">                            
+                            </ul>
+                        </div>
+                    </label>                    
+        </div>
+    </div>
+        <div   class="bog_copyright">         
+            <p  class="copyright_p" >版权声明：本文为博主原创文章，未经博主允许不得转载。</p>
+        </div>
+
+  
+
+  
+  
+     
+
+
+<div id="article_content" class="article_content tracking-ad" data-mod=popu_307  data-dsm = "post" >
+        <div class="markdown_views"><h1 id="什么是shader">什么是Shader</h1>
+
+<p>Shader（着色器）是一段能够针对3D对象进行操作、并被GPU所执行的程序。Shader并不是一个统一的标准，不同的图形接口的Shader并不相同。OpenGL的着色语言是GLSL， NVidia开发了Cg，而微软的Direct3D使用高级着色器语言（HLSL）。而Unity的Shader 是将传统的图形接口的Shader（由 Cg / HLSL编写）嵌入到独有的描述性结构中而形成的一种代码生成框架，最终会自动生成各硬件平台自己的Shader，从而实现跨平台。</p>
+
+<p>Unity Shader 其实并不难，初学者往往很迷惑是因为它有太多固定的命令和结构，而这些命令又需要我们对3D渲染有一定的了解才能知道它们是做什么的。</p>
+
+<hr>
+
+
+
+<h1 id="shader种类">Shader种类</h1>
+
+<p>OpenGL和Direct3D都提供了三类着色器：</p>
+
+<ul>
+<li>顶点着色器：处理每个顶点，将顶点的空间位置投影在屏幕上，即计算顶点的二维坐标。同时，它也负责顶点的深度缓冲（Z-Buffer）的计算。顶点着色器可以掌控顶点的位置、颜色和纹理坐标等属性，但无法生成新的顶点。顶点着色器的输出传递到流水线的下一步。如果有之后定义了几何着色器，则几何着色器会处理顶点着色器的输出数据，否则，光栅化器继续流水线任务。</li>
+<li>像素着色器(Direct3D)，常常又称为片断着色器(OpenGL)：处理来自光栅化器的数据。光栅化器已经将多边形填满并通过流水线传送至像素着色器，后者逐像素计算颜色。像素着色器常用来处理场景光照和与之相关的效果，如凸凹纹理映射和调色。名称片断着色器似乎更为准确，因为对于着色器的调用和屏幕上像素的显示并非一一对应。举个例子，对于一个像素，片断着色器可能会被调用若干次来决定它最终的颜色，那些被遮挡的物体也会被计算，直到最后的深度缓冲才将各物体前后排序。</li>
+<li>几何着色器：可以从多边形网格中增删顶点。它能够执行对CPU来说过于繁重的生成几何结构和增加模型细节的工作。Direct3D版本10增加了支持几何着色器的API, 成为Shader Model 4.0的组成部分。OpenGL只可通过它的一个插件来使用几何着色器。</li>
+</ul>
+
+<p>Unity Shader 分为 表面着色器（Surface Shader）和 顶点片段着色器（Vertex And Fragment Shader）。</p>
+
+<ul>
+<li>表面着色器（Surface Shader）是Unity提出的一个概念。编写着色器与光照的交互是复杂的，光源有很多类型，不同的阴影选项，不同的渲染路径(正向和延时渲染)，表面着色器将这一部分简化。Unity建议使用表面着色器来编写和光照有关的Shader。</li>
+<li>顶点片段着色器（Vertex And Fragment Shader）和OpenGL，Direct3D中的顶点着色器和片段着色器没有什么区别。顶点片段着色器比表面着色器使用更自由也更强大，当然光照需要自行处理。Unity也允许在里面编写几何着色器，一般用得不多。</li>
+</ul>
+
+<hr>
+
+
+
+<h1 id="shader程序结构">Shader程序结构</h1>
+
+<p><img src="http://img.blog.csdn.net/20150610115021877" alt="这里写图片描述" title=""></p>
+
+<p>Shader语法：</p>
+
+
+
+<pre class="prettyprint"><code class=" hljs r">//Shader语法：
+Shader <span class="hljs-string">"name"</span> { [Properties] Subshaders [Fallback] [CustomEditor] }
+
+//Properties 语法
+Properties { Property [Property <span class="hljs-keyword">...</span>] }
+
+// Subshader 语法
+Subshader { [Tags] [CommonState] Passdef [Passdef <span class="hljs-keyword">...</span>] }
+
+// Pass 语法
+Pass { [Name and Tags] [RenderSetup] }
+
+// Fallback 语法
+Fallback <span class="hljs-string">"name"</span></code></pre>
+
+<ul>
+<li>属性定义（Property Definition）：定义Shader的输入，这些输入可以在材质编辑的时候指定</li>
+<li>子着色器（SubShader）：一个Shader可以有多个子着色器。这些子着色器互不相干且只有一个会在最终的平台运行。编写多个的目的是解决兼容性问题。Unity会自己选择兼容终端平台的Shader运行。</li>
+<li>回滚（Fallback）：如果子着色器在终端平台上都无法运行，那么使用Fallback指定的备用Shader，俗称备胎。</li>
+<li>Pass：一个Pass就是一次绘制。对于表面着色器，只能有一个Pass，所以不存在Pass节。顶点片段着色器可以有多个Pass。多次Pass可以实现很多特殊效果，例如当人物被环境遮挡时还可以看到人物轮廓就可以用多Pass来实现。</li>
+<li>Cg代码：每个Pass中都可以包含自定义的Cg代码，从CGPROGRAM开始到ENDCG结束。</li>
+</ul>
+
+<p>基本的表面着色器示例：</p>
+
+
+
+<pre class="prettyprint"><code class="language-c hljs ">    Shader <span class="hljs-string">"Custom/NewShader"</span> {
+        Properties {
+            _MainTex (<span class="hljs-string">"Base (RGB)"</span>, <span class="hljs-number">2</span>D) = <span class="hljs-string">"white"</span> {}
+        }
+        SubShader {
+            Tags { <span class="hljs-string">"RenderType"</span> = <span class="hljs-string">"Opaque"</span> }
+            LOD <span class="hljs-number">200</span>
+
+            CGPROGRAM
+            <span class="hljs-preprocessor">#pragma surface surf Lambert</span>
+
+            sampler2D _MainTex;
+
+            <span class="hljs-keyword">struct</span> Input {
+                float2 uv_MainTex;
+            };
+
+            <span class="hljs-keyword">void</span> surf (Input IN, inout SurfaceOutput o) {
+                half4 c = tex2D (_MainTex, IN.uv_MainTex);
+                o.Albedo = c.rgb;
+                o.Alpha = c.a;
+            }
+            ENDCG
+        }
+        FallBack <span class="hljs-string">"Diffuse"</span>
+    }</code></pre>
+
+<p>基本的顶点片段着色器示例：</p>
+
+
+
+<pre class="prettyprint"><code class="language-c hljs ">Shader <span class="hljs-string">"VertexInputSimple"</span> {
+  SubShader {
+    Pass {
+      CGPROGRAM
+      <span class="hljs-preprocessor">#pragma vertex vert</span>
+      <span class="hljs-preprocessor">#pragma fragment frag</span>
+      <span class="hljs-preprocessor">#include "UnityCG.cginc"</span>
+
+      <span class="hljs-keyword">struct</span> v2f {
+          float4 pos : SV_POSITION;
+          fixed4 color : COLOR;
+      };
+
+      v2f vert (appdata_base v)
+      {
+          v2f o;
+          o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
+          o.color.xyz = v.normal * <span class="hljs-number">0.5</span> + <span class="hljs-number">0.5</span>;
+          o.color.w = <span class="hljs-number">1.0</span>;
+          <span class="hljs-keyword">return</span> o;
+      }
+
+      fixed4 frag (v2f i) : SV_Target { <span class="hljs-keyword">return</span> i.color; }
+      ENDCG
+    }
+  } 
+}</code></pre>
+
+<hr>
+
+
+
+<h1 id="shader-输入">Shader 输入</h1>
+
+<p>Shader的输入有两个来源，一是通过属性定义，一是通过Shader.SetGlobalXXX方法全局设置。</p>
+
+<ul>
+<li><p>属性定义变量：属性定义中的变量是Shader参数的主要设置方式。 它是随材质变化的，每个使用该Shader的材质都可以在Inspector或者脚本中设置这些参数。这些参数除了在Shader的Properties段中定义外，还需要在Cg中声明方可使用。例如上面表面着色器的例子中我们定义了_MainTex这个类型为2D的属性，还需要在Cg中声明 sampler2D _MainTex。</p></li>
+<li><p>全局变量：Shader有一组SetGlobalXXX方法，可以对Shader的在Cg中定义而没有在属性中定义的uniform变量进行设置。这个设置是全局的，所有定义了该uniform的Shader都会受到影响。例如我们希望场景随着时间变化而改变颜色，就可以给场景所使用到的Shader设置统一的全局颜色变量，然后在脚本中通过设置该颜色来改变场景的颜色。在角色释放技能时场景变黑也可以使用这个方法。</p></li>
+</ul>
+
+<p>Unity shader 中允许定义的属性类型有：</p>
+
+<table>
+<thead>
+<tr>
+  <th>关键字</th>
+  <th>类型</th>
+  <th>对应Cg类型</th>
+  <th>例</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td>Float</td>
+  <td>浮点数</td>
+  <td>float</td>
+  <td>_MyFloat (“My float”, Float) = 0.5</td>
+</tr>
+<tr>
+  <td>Range</td>
+  <td>浮点数 (在指定范围内)</td>
+  <td>float</td>
+  <td>_MyRange (“My Range”, Range(0.01, 0.5)) = 0.1</td>
+</tr>
+<tr>
+  <td>Color</td>
+  <td>浮点四元组</td>
+  <td>float4</td>
+  <td>_MyColor (“Some Color”, Color) = (1,1,1,1)</td>
+</tr>
+<tr>
+  <td>Vector</td>
+  <td>浮点四元组</td>
+  <td>float4</td>
+  <td>_MyVector(“Some Vector”,Vector)  = (1,1,1,1)</td>
+</tr>
+<tr>
+  <td>2D</td>
+  <td>2的阶数大小的贴图</td>
+  <td>sampler2D</td>
+  <td>_MyTexture (“Texture”, 2D) = “white” {}</td>
+</tr>
+<tr>
+  <td>Rect</td>
+  <td>非2的阶数大小的贴图</td>
+  <td>sampler2D</td>
+  <td>_MyRect(“My Rect”, Rect) = “white” {}</td>
+</tr>
+<tr>
+  <td>CUBE</td>
+  <td>CubeMap</td>
+  <td>samplerCUBE</td>
+  <td>_MyCubemap (“Cubemap”, CUBE) = “” {}</td>
+</tr>
+</tbody></table>
+
+
+<p>注：CubeMap 是6张有联系的2D贴图的组合主要用来做反射效果（比如天空盒和动态反射）</p>
+
+<hr>
+
+
+
+<h1 id="subshader">SubShader</h1>
+
+<p>SubShader中除了Pass，有两个标签值得关注：LOD和Tags</p>
+
+
+
+<h2 id="lod">LOD</h2>
+
+<p>LOD是 Level of Detail的简写，确切地说是Shader Level of Detail的简写，因为Unity中还有一个模型的LOD概念，这是两个不同的东西。我们这里只介绍Shader中LOD，模型的LOD请<a href="http://docs.unity3d.com/Manual/LevelOfDetail.html">参考这里</a>。</p>
+
+<p>Shader LOD 就是让我们设置一个数值，这个数值决定了我们能用什么样的Shader。可以通过Shader.maximumLOD或者Shader.globalMaximumLOD 设定允许的最大LOD，当设定的LOD小于SubShader所指定的LOD时，这个SubShader将不可用。通过LOD，我们就可以为某个材质写一组SubShader，指定不同的LOD，LOD越大则渲染效果越好，当然对硬件的要求也可能越高，然后根据不同的终端硬件配置来设置 globalMaximumLOD来达到兼顾性能的最佳显示效果。</p>
+
+<p>Unity内建Shader定义了一组LOD的数值，我们在实现自己的Shader的时候可以将其作为参考来设定自己的LOD数值</p>
+
+<ul>
+<li>VertexLit及其系列 = 100</li>
+<li>Decal, Reflective VertexLit = 150</li>
+<li>Diffuse = 200</li>
+<li>Diffuse Detail, Reflective Bumped Unlit, Reflective Bumped VertexLit = 250</li>
+<li>Bumped, Specular = 300</li>
+<li>Bumped Specular = 400</li>
+<li>Parallax = 500</li>
+<li>Parallax Specular = 600</li>
+</ul>
+
+
+
+<h2 id="tag">Tag</h2>
+
+<p>SubShader可以被若干的标签（tags）所修饰，而硬件将通过判定这些标签来决定什么时候调用该着色器。 <br>
+比较常见的标签有：</p>
+
+<ul>
+<li>Queue <br>
+这个标签很重要，它定义了一个整数，决定了Shader的渲染的次序，数字越小就越早被渲染，早渲染就意味着可能被后面渲染的东西覆盖掉看不见。 <br>
+预定义的Queue有：</li>
+</ul>
+
+<table>
+<thead>
+<tr>
+  <th>名字</th>
+  <th>值</th>
+  <th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td>Background</td>
+  <td>1000</td>
+  <td>最早被调用的渲染，用来渲染天空盒或者背景</td>
+</tr>
+<tr>
+  <td>Geometry</td>
+  <td>2000</td>
+  <td>这是默认值，用来渲染非透明物体（普通情况下，场景中的绝大多数物体应该是非透明的）</td>
+</tr>
+<tr>
+  <td>AlphaTest</td>
+  <td>2450</td>
+  <td>用来渲染经过Alpha Test的像素，单独为AlphaTest设定一个Queue是出于对效率的考虑</td>
+</tr>
+<tr>
+  <td>Transparent</td>
+  <td>3000</td>
+  <td>以从后往前的顺序渲染透明物体</td>
+</tr>
+<tr>
+  <td>Overlay</td>
+  <td>4000</td>
+  <td>用来渲染叠加的效果，是渲染的最后阶段（比如镜头光晕等特效）</td>
+</tr>
+</tbody></table>
+
+
+<ul>
+<li>RenderType <br>
+“Opaque”或”Transparent”是两个常用的RenderType。如果输出中都是非透明物体，那写在Opaque里；如果想渲染透明或者半透明的像素，那应该写在Transparent中。这个Tag主要用<a href="http://docs.unity3d.com/Manual/SL-ShaderReplacement.html">ShaderReplacement</a>，一般情况下这Tag好像也没什么作用。</li>
+</ul>
+
+
+
+<h2 id="commonstate">CommonState</h2>
+
+<p>SubShader中可以定义一组Render State，基本上就是一些渲染的开关选项，他们对该SubShader的所有的Pass都有效，所以称Common。这些Render State也可以在每个Pass中分别定义，将在Pass中详细介绍。</p>
+
+<hr>
+
+
+
+<h1 id="pass">Pass</h1>
+
+
+
+<h2 id="render-state">Render State</h2>
+
+<p>Render State主要就是控制渲染过程的一些开关选项，例如是否开启alpha blending ，是否开启depth testing。 <br>
+常用的Render State有：</p>
+
+<ul>
+<li><p>Cull <br>
+用法：Cull Back | Front | Off <br>
+多边形表面剔除开关。Back表示背面剔除，Front表示正面剔除，Off表示关闭表面剔除即双面渲染。有时候如裙摆，飘带之类很薄的东西在建模时会做成一个面片，这就需要设置Cull Off来双面渲染，否则背面会是黑色。</p></li>
+<li><p>ZWrite  <br>
+用法：ZWrite On | Off <br>
+控制当前对象的像素是否写入深度缓冲区（depth buffer），默认是开启的。一般来说绘制不透明物体的话ZWrite开启，绘制透明或半透明物体则ZWrite关闭。 <br>
+<strong>深度缓冲区</strong>：当图形处理卡渲染物体的时候，每一个所生成的像素的深度（即 z 坐标）就保存在一个缓冲区中。这个缓冲区叫作 z 缓冲区或者深度缓冲区，这个缓冲区通常组织成一个保存每个屏幕像素深度的 x-y 二维数组。如果场景中的另外一个物体也在同一个像素生成渲染结果，那么图形处理卡就会比较二者的深度，并且保留距离观察者较近的物体。然后这个所保留的物体点深度保存到深度缓冲区中。最后，图形卡就可以根据深度缓冲区正确地生成通常的深度感知效果：较近的物体遮挡较远的物体。 <br>
+理解了深度缓冲区也就理解了为什么绘制透明或半透明物体需要关闭ZWrite, 如果不关闭，透明物体的depth也会被写入深度缓冲区，从而会剔除掉它后面的物体，后面的物体就不会被渲染，看不见后面的物体还能叫透明吗？因此我们使用Alpha blending的时候需要设置ZWrite Off。</p></li>
+<li><p>ZTest <br>
+用法：ZTest (Less | Greater | LEqual | GEqual | Equal | NotEqual | Always) <br>
+控制如何进行深度测试，也就是上面说的图形处理卡比较二者的深度的比较方法。默认是LEqual。 <br>
+值得一提的是使用Aplha blending的时候ZWrite需要关闭但是ZTest是要开启的，因为如果透明物体前面还有不透明物体，透明物体还是应该被遮挡剔除的。</p></li>
+<li><p>Blend <br>
+混合。控制了每个Shader的输出如何和屏幕上已有的颜色混合。 <br>
+用法： <br>
+Blend Off： 关闭混合 <br>
+Blend SrcFactor DstFactor：最终颜色 = Shader产生的颜色 × SrcFactor + 屏幕上原来的颜色 × DstFactor <br>
+Blend SrcFactor DstFactor, SrcFactorA DstFactor：和上面一样，只是Alpha通道使用后面两个参数计算 <br>
+<strong>常用的Blend模式有</strong>： <br>
+Blend SrcAlpha OneMinusSrcAlpha // Alpha blending <br>
+Blend One One // Additive <br>
+Blend OneMinusDstColor One // Soft Additive <br>
+Blend DstColor Zero // Multiplicative <br>
+Blend DstColor SrcColor // 2x Multiplicative <br>
+<a href="http://docs.unity3d.com/Manual/SL-Blend.html">具体参考这里</a></p></li>
+</ul>
+
+<p>Unity5开始下列固定功能的Shader命令被标记为过时了，这些命令的功能现在建议在Shader(Cg)中通过代码来实现，这里列出是为了方便阅读以前写的Shader：</p>
+
+<ul>
+<li>Lighting On | Off</li>
+<li>Material { Material Block }</li>
+<li>SeparateSpecular On | Off</li>
+<li>Color Color-value</li>
+<li>ColorMaterial AmbientAndDiffuse | Emission</li>
+<li>Fog { Fog Block }</li>
+<li>AlphaTest (Less | Greater | LEqual | GEqual | Equal | NotEqual | Always) CutoffValue</li>
+<li>SetTexture textureProperty { combine options }</li>
+</ul>
+
+<hr>
+
+
+
+<h1 id="surface-shader">Surface Shader</h1>
+
+<p>Surface Shader 隐藏了很多光照处理的细节，它的设计初衷是为了让用户仅仅使用一些指令（#pragma）就可以完成很多事情，并且封装了很多常用的光照模型和函数。相比底层的Vertex And Fragment Shader，Suface Shader的限制比较多，它只能有一次Pass。如果做一些常规的功能又需要光照，可以用Surface Shader写，比较快速便捷。如果要写比较高级的Shader还是建议使用Vertex Shader 和 Fragment Shader。 <br>
+Surface Shader主要有两部分组成，一个是#pragma后面的指令，一个是surf函数。 <br>
+pragma的语法是 <code>#pragma surface surfaceFunction lightModel [optionalparams]</code> <br>
+- surfaceFunction 通常就是名为surf的函数, 函数名可以自己取 <br>
+surf函数原型是：<code>void surf (Input IN, inout SurfaceOutput o)</code> <br>
+- lightModel是Unity内置的光照模型，可以是Lambert，Blinn-Phong等。 <br>
+- optionalparams: 包含很多指令 <a href="http://docs.unity3d.com/Manual/SL-SurfaceShaders.html">详细参数参考这里</a></p>
+
+<p>surf函数主要有一个Input结构的输入和SurfaceOutput结构的输出。</p>
+
+<h2 id="input">Input</h2>
+
+<p>Input 结构需要在Shader中定义。它可以包含如下字段, 如果你定义了这些字段就可以在surf函数中使用它们(好神奇的黑科技)</p>
+
+<ul>
+<li>多个贴图的uv坐标，名字必须符合格式uv+贴图名。例如 <code>float2 uv_MainTex</code></li>
+<li>float3 viewDir - 视图方向( view direction)值。为了计算视差效果(Parallax effects)，边缘光照(rim lighting)等，需要包含视图方向( view direction)值。</li>
+<li>float4 with COLOR semantic - 每个顶点(per-vertex)颜色的插值。</li>
+<li>float4 screenPos - 屏幕空间中的位置。 为了反射效果，需要包含屏幕空间中的位置信息。比如在Dark Unity中所使用的 WetStreet着色器。</li>
+<li>float3 worldPos - 世界空间中的位置。</li>
+<li>float3 worldRefl - 世界空间中的反射向量。如果表面着色器(surface shader)不写入法线(o.Normal)参数，将包含这个参数。 请参考这个例子：Reflect-Diffuse 着色器。</li>
+<li>float3 worldNormal - 世界空间中的法线向量(normal vector)。如果表面着色器(surface shader)不写入法线(o.Normal)参数，将包含这个参数。</li>
+<li>float3 worldRefl; INTERNAL_DATA - 世界空间中的反射向量。如果表面着色器(surface shader)不写入法线(o.Normal)参数，将包含这个参数。</li>
+<li>float3 worldNormal; INTERNAL_DATA -世界空间中的法线向量(normal vector)。如果表面着色器(surface shader)不写入法线(o.Normal)参数，将包含这个参数。</li>
+</ul>
+
+
+
+<h2 id="surfaceoutput">SurfaceOutput</h2>
+
+<p>SurfaceOutput 描述了表面的特性（光照的颜色反射率、法线、散射、镜面等），这个结构是固定的，不需要在Shader中再定义。</p>
+
+
+
+<pre class="prettyprint"><code class=" hljs cs"><span class="hljs-keyword">struct</span> SurfaceOutput {
+    half3 Albedo;       <span class="hljs-comment">//反射率，一般就是在光照之前的原始颜色</span>
+    half3 Normal;       <span class="hljs-comment">//法线</span>
+    half3 Emission;     <span class="hljs-comment">//自发光，用于增强物体自身的亮度，使之看起来好像可以自己发光</span>
+    half Specular;      <span class="hljs-comment">//镜面</span>
+    half Gloss;         <span class="hljs-comment">//光泽</span>
+    half Alpha;         <span class="hljs-comment">//透明</span>
+};</code></pre>
+
+<p>Unity5 由于引入了基于物理的光照模型，所以新增加了两个Output</p>
+
+
+
+<pre class="prettyprint"><code class=" hljs ruby">struct <span class="hljs-constant">SurfaceOutputStandard</span>
+{
+    fixed3 <span class="hljs-constant">Albedo</span>;      <span class="hljs-regexp">//</span> base (diffuse <span class="hljs-keyword">or</span> specular) color
+    fixed3 <span class="hljs-constant">Normal</span>;      <span class="hljs-regexp">//</span> tangent space normal, <span class="hljs-keyword">if</span> written
+    half3 <span class="hljs-constant">Emission</span>;
+    half <span class="hljs-constant">Metallic</span>;      <span class="hljs-regexp">//</span> <span class="hljs-number">0</span>=non-metal, <span class="hljs-number">1</span>=metal
+    half <span class="hljs-constant">Smoothness</span>;    <span class="hljs-regexp">//</span> <span class="hljs-number">0</span>=rough, <span class="hljs-number">1</span>=smooth
+    half <span class="hljs-constant">Occlusion</span>;     <span class="hljs-regexp">//</span> occlusion (default <span class="hljs-number">1</span>)
+    fixed <span class="hljs-constant">Alpha</span>;        <span class="hljs-regexp">//</span> alpha <span class="hljs-keyword">for</span> transparencies
+};
+struct <span class="hljs-constant">SurfaceOutputStandardSpecular</span>
+{
+    fixed3 <span class="hljs-constant">Albedo</span>;      <span class="hljs-regexp">//</span> diffuse color
+    fixed3 <span class="hljs-constant">Specular</span>;    <span class="hljs-regexp">//</span> specular color
+    fixed3 <span class="hljs-constant">Normal</span>;      <span class="hljs-regexp">//</span> tangent space normal, <span class="hljs-keyword">if</span> written
+    half3 <span class="hljs-constant">Emission</span>;
+    half <span class="hljs-constant">Smoothness</span>;    <span class="hljs-regexp">//</span> <span class="hljs-number">0</span>=rough, <span class="hljs-number">1</span>=smooth
+    half <span class="hljs-constant">Occlusion</span>;     <span class="hljs-regexp">//</span> occlusion (default <span class="hljs-number">1</span>)
+    fixed <span class="hljs-constant">Alpha</span>;        <span class="hljs-regexp">//</span> alpha <span class="hljs-keyword">for</span> transparencies
+};</code></pre>
+
+<p>Unity提供了一些基本的SurfaceShader的例子，有助于我们理解输入输出是如何被使用的。 <br>
+<a href="http://docs.unity3d.com/Manual/SL-SurfaceShaderExamples.html">Unity提供的SurfaceShader的例子</a></p>
+
+<hr>
+
+
+
+<h1 id="vertex-shader">Vertex Shader</h1>
+
+<p>如果不想使用Surface Shader而直接编写opengl和Direct3D中常见的顶点着色器和片段着色器，可以通过Cg代码段嵌入到Pass中：</p>
+
+
+
+<pre class="prettyprint"><code class="language-c hljs ">  Pass {
+      <span class="hljs-comment">// ... the usual pass state setup ...</span>
+
+      CGPROGRAM
+      <span class="hljs-comment">// compilation directives for this snippet, e.g.:</span>
+      <span class="hljs-preprocessor">#pragma vertex vert</span>
+      <span class="hljs-preprocessor">#pragma fragment frag</span>
+
+      <span class="hljs-comment">// the Cg/HLSL code itself</span>
+
+      ENDCG
+      <span class="hljs-comment">// ... the rest of pass setup ...</span>
+  }</code></pre>
+
+<p>其中vert就是顶点着色器函数，frag就是片段着色器函数。一般来说，可以在顶点着色器中进行的计算就不应该放到片段着色器中去算，因为顶点着色器是逐顶点计算的而片段着色器是逐像素计算的，一个模型顶点总比表明像素少很多吧。</p>
+
+<p>编写顶点和片段着色器一般需要包含Unity预定义的一个帮助文件UnityCG.cginc，里面预定义了一些常用的结构和方法。Windows版Unity这个文件位于<code>({unity install path}/Data/CGIncludes/UnityCG.cginc</code>。 Mac版位于<code>/Applications/Unity/Unity.app/Contents/CGIncludes/UnityCG.cginc</code>。</p>
+
+<p>在代码中我们只需要添加 <code>#include "UnityCG.cginc"</code>就可以使用里面的结构和方法。</p>
+
+
+
+<h2 id="input-1">Input</h2>
+
+<p>顶点着色器的原型是 v2f vert (appdata v) <br>
+appdata 是输入，可以自己定义也可以使用Unity预定义的。Unity在UnityCG.cginc预定义了三种常用的输入结构：appdata_base，appdata_tan，appdata_full。</p>
+
+
+
+<pre class="prettyprint"><code class="language-c hljs "><span class="hljs-keyword">struct</span> appdata_base {
+    float4 vertex : POSITION;
+    float3 normal : NORMAL;
+    float4 texcoord : TEXCOORD0;
+};
+
+<span class="hljs-keyword">struct</span> appdata_tan {
+    float4 vertex : POSITION;
+    float4 tangent : TANGENT;
+    float3 normal : NORMAL;
+    float4 texcoord : TEXCOORD0;
+};
+
+<span class="hljs-keyword">struct</span> appdata_full {
+    float4 vertex : POSITION;
+    float4 tangent : TANGENT;
+    float3 normal : NORMAL;
+    float4 texcoord : TEXCOORD0;
+    float4 texcoord1 : TEXCOORD1;
+    float4 texcoord2 : TEXCOORD2;
+    float4 texcoord3 : TEXCOORD3;
+<span class="hljs-preprocessor">#if defined(SHADER_API_XBOX360)</span>
+    half4 texcoord4 : TEXCOORD4;
+    half4 texcoord5 : TEXCOORD5;
+<span class="hljs-preprocessor">#endif</span>
+    fixed4 color : COLOR;
+};</code></pre>
+
+<p>我们注意到这些结构的字段和表面着色器中的字段不同，后面多了一个冒号和一个标签。这是该字段的语义，用于告诉GPU这个字段的数据应该去哪里读写。GPU毕竟是为了图形计算而特别设计的东西，很多东西都是固定的，我们只要记得有这么几个名字可以用行了。</p>
+
+<table>
+<thead>
+<tr>
+  <th align="right">类型</th>
+  <th>名字</th>
+  <th>标签</th>
+  <th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="right">float4</td>
+  <td>vertex</td>
+  <td>POSITION</td>
+  <td>顶点在模型坐标系下的位置</td>
+</tr>
+<tr>
+  <td align="right">float3</td>
+  <td>normal</td>
+  <td>NORMAL</td>
+  <td>顶点的法向量</td>
+</tr>
+<tr>
+  <td align="right">float4</td>
+  <td>tangent</td>
+  <td>TANGENT</td>
+  <td>顶点的切向量</td>
+</tr>
+<tr>
+  <td align="right">float4</td>
+  <td>color</td>
+  <td>COLOR</td>
+  <td>顶点色</td>
+</tr>
+<tr>
+  <td align="right">float4</td>
+  <td>texcoord</td>
+  <td>TEXCOORD0</td>
+  <td>顶点的第一个uv坐标</td>
+</tr>
+<tr>
+  <td align="right">float4</td>
+  <td>texcoord1</td>
+  <td>TEXCOORD1</td>
+  <td>顶点的第二个uv坐标，最多可以到5</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h2 id="output">Output</h2>
+
+<p>顶点着色器的输出是也是一个可以自己定义的结构，但是结构内容也是比较固定的，一般包含了顶点投影后的位置，uv，顶点色等，也可以加一些后面片段着色器需要用到但是需要在顶点着色器中计算的值。这个输出就是后面片段着色器的输入。</p>
+
+
+
+<pre class="prettyprint"><code class="language-c hljs "> <span class="hljs-keyword">struct</span> v2f 
+ {
+    float4 pos : SV_POSITION;
+    half2 uv   : TEXCOORD0;
+ };</code></pre>
+
+<p>可以使用的字段有：</p>
+
+<table>
+<thead>
+<tr>
+  <th align="right">类型</th>
+  <th>标签</th>
+  <th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td align="right">float4</td>
+  <td>SV_POSITION</td>
+  <td>顶点在投影空间下的位置，注意和输入的模型坐标系下的位置不同，这个字段必必须设置，这个坐标转换是顶点着色器的重要工作</td>
+</tr>
+<tr>
+  <td align="right">float3</td>
+  <td>NORMAL</td>
+  <td>顶点在视图坐标系下的法向量</td>
+</tr>
+<tr>
+  <td align="right">float4</td>
+  <td>TEXCOORD0</td>
+  <td>第一张贴图的uv坐标</td>
+</tr>
+<tr>
+  <td align="right">float4</td>
+  <td>TEXCOORD1</td>
+  <td>第二张贴图的uv坐标</td>
+</tr>
+<tr>
+  <td align="right">float4</td>
+  <td>TANGENT</td>
+  <td>切向量，主要用来修正法线贴图Normal Maps</td>
+</tr>
+<tr>
+  <td align="right">fixed4</td>
+  <td>COLOR</td>
+  <td>第一个定点色</td>
+</tr>
+<tr>
+  <td align="right">fixed4</td>
+  <td>COLOR1</td>
+  <td>第二个定点色</td>
+</tr>
+<tr>
+  <td align="right">Any</td>
+  <td>Any</td>
+  <td>其他自定义的字段</td>
+</tr>
+</tbody></table>
+
+
+
+
+<h2 id="坐标变换">坐标变换</h2>
+
+<p>顶点着色器有一项重要的工作就是进行坐标变换。顶点着色器的输入中的坐标是模型坐标系(ObjectSpace)下的坐标，而最终绘制到屏幕上的是投影坐标。 <br>
+在我们Shader里面只需要一句话就可以完成坐标的转换，这也是最简单的顶点着色器：</p>
+
+
+
+<pre class="prettyprint"><code class="language-c hljs ">v2f vert(appdata v) {
+          v2f o;
+          o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+          <span class="hljs-keyword">return</span> o;
+}</code></pre>
+
+<p>用UNITY_MATRIX_MVP矩阵乘以顶点在模型坐标系下的坐标就得到投影坐标。 <br>
+UNITY_MATRIX_MVP是Unity内建的模型-&gt;视-&gt;投影矩阵， Unity内建矩阵如下：</p>
+
+<ul>
+<li>UNITY_MATRIX_MVP：当前模型-&gt;视图-&gt;投影矩阵。（注：模型矩阵为 本地-&gt;世界）</li>
+<li>UNITY_MATRIX_MV：当前模型-&gt;视图矩阵</li>
+<li>UNITY_MATRIX_V：当前视图矩阵</li>
+<li>UNITY_MATRIX_P：当前投影矩阵</li>
+<li>UNITY_MATRIX_VP：当前视图-&gt;投影矩阵</li>
+<li>UNITY_MATRIX_T_MV：转置模型-&gt;视图矩阵</li>
+<li>UNITY_MATRIX_IT_MV：逆转置模型-&gt;视矩阵, 用于将法线从ObjectSpace旋转到WorldSpace。为什么法线变化不能和位置变换一样用UNITY_MATRIX_MV呢？一是因为法线是3维的向量而- UNITY_MATRIX_MV是一个4x4矩阵，二是因为法线是向量，我们只希望对它旋转，但是在进行空间变换的时候，如果发生非等比缩放，方向会发生偏移。</li>
+<li>UNITY_MATRIX_TEXTURE0 to UNITY_MATRIX_TEXTURE3：纹理变换矩阵</li>
+</ul>
+
+<p>下面简单介绍一下里面提到的几个坐标系： <br>
+<strong>模型坐标系：</strong>也叫物体坐标系，3D建模的时候每个模型都是在自己的坐标系下建立的，如果一个人物模型脚底是(0,0,0) 点的话它的身上其它点的坐标都是相对脚底这个原点的。 <br>
+<strong>世界坐标系：</strong>我们场景是一个世界，有自己的原点，模型放置到场景中后模型上的每个顶点就有了一个新的世界坐标。这个坐标可以通过模型矩阵×模型上顶点的模型坐标得到。 <br>
+<strong>视图坐标系：</strong>又叫观察坐标系，是以观察者（相机）为原点的坐标系。场景中的物体只有被相机观察到才会绘制到屏幕上，相机可以设置视口大小和裁剪平面来控制可视范围，这些都是相对相机来说的，所以需要把世界坐标转换到视图坐标系来方便处理。 <br>
+<strong>投影坐标系：</strong>场景是3D的，但是最终绘制到屏幕上是2D，投影坐标系完成这个降维的工作，投影变换后3D的坐标就变成2D的坐标了。投影有平行投影和透视投影两种，可以在Unity的相机上设置。 <br>
+<strong>屏幕坐标系 : </strong>最终绘制到屏幕上的坐标。屏幕的左下角为原点。</p>
+
+<p>除了内建矩阵，Unity还内建了一些辅助函数也可以在顶点着色器里面使用：</p>
+
+<ul>
+<li>float3 WorldSpaceViewDir (float4 v)：根据给定的局部空间顶点位置到相机返回世界空间的方向（非规范化的）</li>
+<li>float3 ObjSpaceViewDir (float4 v)：根据给定的局部空间顶点位置到相机返回局部空间的方向（非规范化的）</li>
+<li>float2 ParallaxOffset (half h, half height, half3 viewDir)：为视差法线贴图计算UV偏移</li>
+<li>fixed Luminance (fixed3 c)：将颜色转换为亮度（灰度）</li>
+<li>fixed3 DecodeLightmap (fixed4 color)：从Unity光照贴图解码颜色（基于平台为RGBM 或dLDR）</li>
+<li>float4 EncodeFloatRGBA (float v)：为储存低精度的渲染目标，编码[0..1)范围的浮点数到RGBA颜色。</li>
+<li>float DecodeFloatRGBA (float4 enc)：解码RGBA颜色到float。</li>
+<li>float2 EncodeViewNormalStereo (float3 n)：编码视图空间法线到在0到1范围的两个数。</li>
+<li>float3 DecodeViewNormalStereo (float4 enc4)：从enc4.xy解码视图空间法线</li>
+</ul>
+
+
+
+<h1 id="fragment-shader">Fragment Shader</h1>
+
+<p>// TODO</p>
+
+<hr>
+
+<p>参考： <br>
+<a href="http://onevcat.com/2013/07/shader-tutorial-1/">猫都能学会的Unity3D Shader入门指南</a></p>
+
+<p>原文地址：<a href="http://blog.csdn.net/ring0hx/article/details/46440037">http://blog.csdn.net/ring0hx/article/details/46440037</a></p></div>
+        <script  type="text/javascript">
+            $(function () {
+                $('pre.prettyprint code').each(function () {
+                    var lines = $(this).text().split('\n').length;
+                    var $numbering = $('<ul/>').addClass('pre-numbering').hide();
+                    $(this).addClass('has-numbering').parent().append($numbering);
+                    for (i = 1; i <= lines; i++) {
+                        $numbering.append($('<li/>').text(i));
+                    };
+                    $numbering.fadeIn(1700);
+                });
+            });
+        </script>
+   
+</div>
+
+
+
+
+<!-- Baidu Button BEGIN -->
+
+
+
+
+<div class="bdsharebuttonbox tracking-ad" style="float: right;" data-mod="popu_172">
+<a href="#" class="bds_more" data-cmd="more" style="background-position:0 0 !important; background-image: url(http://bdimg.share.baidu.com/static/api/img/share/icons_0_16.png?v=d754dcc0.png) !important"></a>
+<a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"  style="background-position:0 -52px !important"></a>
+<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"style="background-position:0 -104px !important"></a>
+<a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博"style="background-position:0 -260px !important"></a>
+<a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网"style="background-position:0 -208px !important"></a>
+<a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"style="background-position:0 -1612px !important" ></a>
+</div>
+<script>window._bd_share_config = { "common": { "bdSnsKey": {}, "bdText": "", "bdMini": "1", "bdMiniList": false, "bdPic": "", "bdStyle": "0", "bdSize": "16" }, "share": {} }; with (document) 0[(getElementsByTagName('head')[0] || body).appendChild(createElement('script')).src = 'http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion=' + ~(-new Date() / 36e5)];</script>
+<!-- Baidu Button END -->
+
+   
+
+<!--172.16.140.13-->
+
+<!-- Baidu Button BEGIN -->
+<script type="text/javascript" id="bdshare_js" data="type=tools&amp;uid=1536434" ></script>
+<script type="text/javascript" id="bdshell_js"></script>
+<script type="text/javascript">
+    document.getElementById("bdshell_js").src = "http://bdimg.share.baidu.com/static/js/shell_v2.js?cdnversion=" + Math.ceil(new Date()/3600000)
+</script>
+<!-- Baidu Button END -->
+
+
+
+ 
+
+
+        <div id="digg" ArticleId="46440037" >
+            <dl id="btnDigg" class="digg digg_disable"  onclick="btndigga();">
+               
+                 <dt>顶</dt>
+                <dd>2</dd>
+            </dl>
+           
+              
+            <dl id="btnBury" class="digg digg_disable"  onclick="btnburya();">
+              
+                  <dt>踩</dt>
+                <dd>1</dd>               
+            </dl>
+            
+        </div>
+     <div class="tracking-ad" data-mod="popu_222"><a href="javascript:void(0);" >&nbsp;</a>   </div>
+    <div class="tracking-ad" data-mod="popu_223"> <a href="javascript:void(0);" >&nbsp;</a></div>
+    <script type="text/javascript">
+        function btndigga() {
+            $(".tracking-ad[data-mod='popu_222'] a").click();
+        }
+        function btnburya() {
+            $(".tracking-ad[data-mod='popu_223'] a").click();
+        }
+            </script>
+
+   <ul class="article_next_prev">
+                <li class="prev_article"><span  onclick="_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_shangyipian']);location.href='http://blog.csdn.net/ring0hx/article/details/46376709';">上一篇</span><a href="http://blog.csdn.net/ring0hx/article/details/46376709" onclick="_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_shangyipian'])">Unity5 如何做资源管理和增量更新</a></li>
+                <li class="next_article"><span onclick="_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_xiayipian']);location.href='http://blog.csdn.net/ring0hx/article/details/54348327';">下一篇</span><a href="http://blog.csdn.net/ring0hx/article/details/54348327" onclick="_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_xiayipian'])">互联网产品saas化为何困难</a></li>
+    </ul>
+
+    <div style="clear:both; height:10px;"></div>
+
+
+            <div class="similar_article"   >
+                    <h4></h4>
+                    <div class="similar_c"style="margin:20px 0px 0px 0px">
+                        <div class="similar_c_t">
+                          &nbsp;&nbsp;相关文章推荐
+                        </div>
+                   
+                        <div class="similar_wrap tracking-ad" data-mod="popu_36"  style="max-height:250px">                       
+                            <ul class="similar_list fl">    
+                                   <li>
+                                       <em>•</em>
+                                       <a href="http://blog.csdn.net/OnafioO/article/details/53503625" title="Unity中的Lod" strategy="BlogCommendFromBaidu_0" target="_blank">Unity中的Lod</a>
+                                   </li>
+                                   <li>
+                                       <em>•</em>
+                                       <a href="http://edu.csdn.net/huiyiCourse/series_detail/68?utm_sorce=blog7" title="用户画像系统应用与技术解析--汪剑" strategy="undefined" target="_blank">用户画像系统应用与技术解析--汪剑</a>
+                                   </li>
+                                   <li>
+                                       <em>•</em>
+                                       <a href="http://blog.csdn.net/AutisticPatient/article/details/65160193" title="UnityShader官方案例讲解——SurfaceShader(2)" strategy="BlogCommendFromBaidu_1" target="_blank">UnityShader官方案例讲解——SurfaceShader(2)</a>
+                                   </li>
+                                   <li>
+                                       <em>•</em>
+                                       <a href="http://edu.csdn.net/huiyiCourse/detail/531?utm_source=blog7" title="实时流计算平台Blink在阿里集团的应用实践--陈守元" strategy="undefined" target="_blank">实时流计算平台Blink在阿里集团的应用实践--陈守元</a>
+                                   </li>
+                                   <li>
+                                       <em>•</em>
+                                       <a href="http://blog.csdn.net/candycat1992/article/details/42127811" title="【Unity技巧】Unity中的优化技术" strategy="BlogCommendFromBaidu_2" target="_blank">【Unity技巧】Unity中的优化技术</a>
+                                   </li>
+                                   <li>
+                                       <em>•</em>
+                                       <a href="http://edu.csdn.net/course/detail/6134?utm_source=blog7" title="Java 9新特性解读" strategy="undefined" target="_blank">Java 9新特性解读</a>
+                                   </li>
+                                   <li>
+                                       <em>•</em>
+                                       <a href="http://blog.csdn.net/soilwork/article/details/580017" title="使用基于GPU的Geometry Clipmap渲染地形（上）" strategy="BlogCommendFromBaidu_3" target="_blank">使用基于GPU的Geometry Clipmap渲染地形（上）</a>
+                                   </li>
+                                   <li>
+                                       <em>•</em>
+                                       <a href="http://edu.csdn.net/course/detail/1059?utm_source=blog7" title="Cocos2d-x 实战演练基础篇" strategy="undefined" target="_blank">Cocos2d-x 实战演练基础篇</a>
+                                   </li>
+                            </ul>
+                              <ul class="similar_list fr">      
+                                   <li>
+                                       <em>•</em>
+                                       <a href="http://blog.csdn.net/zhmxy555/article/details/42060963" title="【浅墨Unity3D Shader编程】之五 圣诞夜篇: Unity中Shader的三种形态对比&amp;混合操作合辑" strategy="BlogCommendFromBaidu_4" target="_blank">【浅墨Unity3D Shader编程】之五 圣诞夜篇: Unity中Shader的三种形态对比&amp;混合操作合辑</a>
+                                   </li>
+                                   <li>
+                                       <em>•</em>
+                                       <a href="http://edu.csdn.net/course/detail/289?utm_source=blog7" title="Unity3D移动端实战经验分享" strategy="undefined" target="_blank">Unity3D移动端实战经验分享</a>
+                                   </li>
+                                   <li>
+                                       <em>•</em>
+                                       <a href="http://blog.csdn.net/LIQIANGEASTSUN/article/details/44959981" title="Unity之Shader Pass 的通用指令 LOD - 五" strategy="BlogCommendFromBaidu_5" target="_blank">Unity之Shader Pass 的通用指令 LOD - 五</a>
+                                   </li>
+                                   <li>
+                                       <em>•</em>
+                                       <a href="http://edu.csdn.net/course/detail/5397?utm_source=blog7" title="程序员如何转型AI工程师--蒋涛" strategy="undefined" target="_blank">程序员如何转型AI工程师--蒋涛</a>
+                                   </li>
+                                   <li>
+                                       <em>•</em>
+                                       <a href="http://blog.csdn.net/u011047171/article/details/46723645" title="UnityShader实例05:Toon（卡通）材质" strategy="BlogCommendFromBaidu_6" target="_blank">UnityShader实例05:Toon（卡通）材质</a>
+                                   </li>
+                                   <li>
+                                       <em>•</em>
+                                       <a href="http://blog.csdn.net/xoyojank/article/details/12259161" title="游戏中的战争迷雾" strategy="BlogCommendFromBaidu_7" target="_blank">游戏中的战争迷雾</a>
+                                   </li>
+                                   <li>
+                                       <em>•</em>
+                                       <a href="http://blog.csdn.net/e295166319/article/details/53464789" title="Unity中Shader LOD控制" strategy="BlogCommendFromBaidu_8" target="_blank">Unity中Shader LOD控制</a>
+                                   </li>
+                                   <li>
+                                       <em>•</em>
+                                       <a href="http://download.csdn.net/download/good3651/9698715" title="UNITY 5.X游戏开发指南" strategy="BlogCommendFromBaidu_9" target="_blank">UNITY 5.X游戏开发指南</a>
+                                   </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>   
+      
+</div>
+
+    <div>
+      
+        <!--u2843949广告位-->
+        <script type="text/javascript" src="http://mpb1.iteye.com/rmboieuiupt.js"></script>
+     </div>
+
+<div id="suggest"></div>
+         <script  language="javascript" type='text/javascript'>     
+             $(function(){
+                 $.get("/ring0hx/svc/GetSuggestContent/46440037",function(data){
+                     $("#suggest").html(data);
+                 });     
+             });             
+         </script>  
+
+
+
+            
+                                    
+            
+                                    
+
+        <!-- 广告位开始 -->
+        <!-- 广告位结束 -->
+
+
+<div class="comment_class">
+    <div id="comment_title" class="panel_head">
+        <span class="see_comment">查看评论</span><a name="comments"></a></div>
+    <div id="comment_list">
+    </div>
+    <div id="comment_bar">
+    </div>
+    <div id="comment_form">
+    </div>
+    <div class="announce">
+        * 以上用户言论只代表其个人观点，不代表CSDN网站的观点或立场<a name="reply"></a><a name="quote"></a></div>
+</div>
+
+<script type="text/javascript">
+    var fileName = '46440037';
+    var commentscount = 2;
+    var islock = false
+</script>
+
+    <div id="ad_bot">
+    </div>
+<div id="report_dialog">
+</div>
+
+<div id="d-top"  style="bottom:60px;">
+
+        <a id="quick-reply" class="btn btn-top q-reply" title="快速回复" style="display:none;">
+            <img src="http://static.blog.csdn.net/images/blog-icon-reply.png" alt="快速回复">
+        </a>    
+    <a id="d-top-a" class="btn btn-top backtop"  style="display: none;" title="返回顶部" onclick="_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_huidaodingbu'])" style="">         
+         <img src="http://static.blog.csdn.net/images/top.png" alt="TOP">
+    </a>
+</div>
+<script type="text/javascript">
+    $(function ()
+    {
+        $("#ad_frm_0").height("90px");
+        
+        setTimeout(function(){
+            $("#ad_frm_2").height("200px");
+        },1000);    
+    });
+  
+</script>
+<style type="text/css">
+    .tag_list
+    {
+        background: none repeat scroll 0 0 #FFFFFF;
+        border: 1px solid #D7CBC1;
+        color: #000000;
+        font-size: 12px;
+        line-height: 20px;
+        list-style: none outside none;
+        margin: 10px 2% 0 1%;
+        padding: 1px;
+    }
+    .tag_list h5
+    {
+        background: none repeat scroll 0 0 #E0DBD3;
+        color: #47381C;
+        font-size: 12px;
+        height: 24px;
+        line-height: 24px;
+        padding: 0 5px;
+        margin: 0;
+    }
+    .tag_list h5 a
+    {
+        color: #47381C;
+    }
+    .classify
+    {
+        margin: 10px 0;
+        padding: 4px 12px 8px;
+    }
+    .classify a
+    {
+        margin-right: 20px;
+        white-space: nowrap;
+    }
+</style>
+
+
+
+
+
+<div id="pop_win" style="display:none ;position: absolute; z-index: 10000; border: 1px solid rgb(220, 220, 220); top: 222.5px; left: 630px; opacity: 1; background: none 0px 0px repeat scroll rgb(255, 255, 255);">
+    
+</div>
+<div id="popup_mask"></div>
+<style>
+    #popup_mask
+    {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        z-index: 9999;
+        left: 0px;
+        top: 0px;
+        opacity: 0.3;
+        filter: alpha(opacity=30);
+        display: none;
+    }
+
+</style>
+
+
+
+
+<script type="text/javascript">
+    $(function(){        
+        
+        setTimeout(function(){
+            $(".comment_body:contains('回复')").each(function(index,item){
+                var u=$(this).text().split('：')[0].toString().replace("回复","")
+                var thisComment=$(this);
+                if(u)
+                {
+                    $.getJSON("https://passport.csdn.net/get/nick?callback=?", {users: u}, function(a) {
+                        if(a!=null&&a.data!=null&&a.data.length>0)
+                        {
+                            nick=a.data[0].n; 
+                            if(u!=nick)
+                            {
+                                thisComment.text(thisComment.text().replace(u,nick));  
+                            }
+                        }       
+                    });  
+                }
+            });         
+
+        },200);  
+
+        setTimeout(function(){
+            $(".math").each(function(index,value){$(this).find("span").last().css("color","#fff"); })
+        },5000);
+
+        setTimeout(function(){
+            $(".math").each(function(index,value){$(this).find("span").last().css("color","#fff"); })
+        },10000);
+
+        setTimeout(function(){
+            $(".math").each(function(index,value){$(this).find("span").last().css("color","#fff"); })
+        },15000);
+        
+        setTimeout(function(){
+            $("a img[src='http://js.tongji.linezing.com/stats.gif']").parent().css({"position":"absolute","left":"50%"});
+        },300);
+    });
+
+    function loginbox(){
+        var $logpop=$("#pop_win");
+        $logpop.html('<iframe src="https://passport.csdn.net/account/loginbox?service=http://static.blog.csdn.net/callback.htm" frameborder="0" height="600" width="400" scrolling="no"></iframe>');
+
+        $('#popup_mask').css({
+            opacity: 0.5,
+            width: $( document ).width() + 'px',
+            height:  $( document ).height() + 'px'
+        });
+        $('#popup_mask').css("display","block");
+ 
+        $logpop.css( {
+            top: ($( window ).height() - $logpop.height())/ 2  + $( window 
+       ).scrollTop() + 'px',
+            left:($( window ).width() - $logpop.width())/ 2
+        } );
+ 
+        setTimeout( function () {
+            $logpop.show();
+            $logpop.css( {
+                opacity: 1
+            } );
+        }, 200 );
+ 
+        $('#popup_mask').unbind("click");
+        $('#popup_mask').bind("click", function(){
+            $('#popup_mask').hide();
+            var $clopop = $("#pop_win");
+            $("#common_ask_div_sc").css("display","none");
+            $clopop.css( {
+                opacity: 0
+            } );
+            setTimeout( function () {
+                $clopop.hide();
+            }, 350 );
+            return false;
+        });
+    }   
+
+    var articletitle='Unity3D Shader 入门';
+
+</script>
+
+
+
+
+
+
+
+
+
+
+                        <div class="clear">
+                        </div>
+                    </div>                   
+                
+            </div>
+                   
+           <div id="side">
+               
+    <div class="side">
+<div id="panel_Profile" class="panel">
+<ul class="panel_head"><span>个人资料</span></ul>
+<ul class="panel_body profile">
+<div id="blog_userface">
+    <a href="http://my.csdn.net/ring0hx" target="_blank">
+    <img src="http://avatar.csdn.net/D/F/2/1_ring0hx.jpg" title="访问我的空间" style="max-width:90%"/>
+    </a>
+    <br />
+    <span><a href="http://my.csdn.net/ring0hx" class="user_name" target="_blank">ring0hx</a></span>
+</div>
+<div class="interact">
+
+    <a href="javascript:void(0);" class="attent" id="span_add_follow" title="[加关注]"></a>
+
+ <a href="javascript:void(0);" class="letter"  title="[发私信]" onclick="window.open('http://msg.csdn.net/letters/model?receiver=ring0hx','_blank','height=350,width=700');_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_sixin'])"></a>  
+</div>
+<div id="blog_medal">
+                <div id="bms_box">
+                                            <a  target="_blank">
+                                                    <img src="http://c.csdnimg.cn/jifen/images/xunzhang/xunzhang/chizhiyiheng.png" onmouseover="m_over_m(this,4)" onmouseout="m_out_m()" alt="1" >
+                                            </a>
+               </div>
+</div>
+<ul id="blog_rank">
+    <li>访问：<span>294103次</span></li>
+    <li>积分：<span>2337</span> </li>    
+    <li >等级： <span style="position:relative;display:inline-block;z-index:1" >
+            <img src="http://c.csdnimg.cn/jifen/images/xunzhang/jianzhang/blog5.png" alt="" style="vertical-align: middle;" id="leveImg">
+            <div id="smallTittle" style=" position: absolute;  left: -24px;  top: 25px;  text-align: center;  width: 101px;  height: 32px;  background-color: #fff;  line-height: 32px;  border: 2px #DDDDDD solid;  box-shadow: 0px 2px 2px rgba (0,0,0,0.1);  display: none;   z-index: 999;">
+            <div style="left: 42%;  top: -8px;  position: absolute;  width: 0;  height: 0;  border-left: 10px solid transparent;  border-right: 10px solid transparent;  border-bottom: 8px solid #EAEAEA;"></div>
+            积分：2337 </div>
+        </span>  </li>
+    <li>排名：<span>第16656名</span></li>
+</ul>
+<ul id="blog_statistics">
+    <li>原创：<span>25篇</span></li>
+    <li>转载：<span>0篇</span></li>
+    <li>译文：<span>0篇</span></li>
+    <li>评论：<span>117条</span></li>
+</ul>
+</ul>
+</div>
+
+
+<div class="panel" id="panel_Search">
+    <ul class="panel_head"><span>文章搜索</span></ul>
+    <ul class="panel_body" class="form_search">
+        <form id="frmSearch" action="http://so.csdn.net/search" class="form_search csdn-tracking-statistics" target="_blank"  data-mod="popu_306">
+        <span><input id="inputSearch" type="text" class="blogsearch" title="请输入关键字" /></span>
+        <input id="btnSubmit" type="button" value="搜索" title="search in blog" />
+        <input type="hidden" name="q" id="inputQ" />
+        <input type="hidden" name="t" value="blog" />
+        <a id="btnSearchBlog" target="_blank"></a>
+        </form>
+    </ul>
+</div>
+
+<script type="text/javascript">
+
+   
+    $(function () {
+        $("#btnSubmit").unbind("click");
+        $("#btnSubmit").click(function () {           
+            search();
+        });
+
+        $("#frmSearch").submit(function () {           
+            search();
+            return false;
+        });
+
+        function search()
+        {
+            if ($("#inputSearch").val() == "") {               
+                alert("请录入搜索关键词！");                         
+                return false;
+            }
+            //var url = "http://so.csdn.net/so/search/s.do?q=" + encodeURIComponent($("#inputSearch").val()) + "&u=" + username + "&t=blog";           
+            var url = "https://www.baidu.com/s?wd=" + encodeURIComponent($("#inputSearch").val()) + "%20site%3Ablog.csdn.net"
+            window.location.href = url;
+        }   
+    });
+</script><div id="panel_Category" class="panel">
+<ul class="panel_head"><span>文章分类</span></ul>
+<ul class="panel_body">    
+                 <li>
+                    <a href="/ring0hx/article/category/902549" onclick="_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_wenzhangfenlei']); ">Java</a><span>(3)</span>
+                </li>
+                 <li>
+                    <a href="/ring0hx/article/category/927668" onclick="_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_wenzhangfenlei']); ">游戏开发</a><span>(15)</span>
+                </li>
+                 <li>
+                    <a href="/ring0hx/article/category/1170121" onclick="_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_wenzhangfenlei']); ">Unity</a><span>(4)</span>
+                </li>
+                 <li>
+                    <a href="/ring0hx/article/category/6676472" onclick="_gaq.push(['_trackEvent','function', 'onclick', 'blog_articles_wenzhangfenlei']); ">互联网</a><span>(1)</span>
+                </li>
+</ul>
+</div><div id="panel_Archive" class="panel">
+<ul class="panel_head"><span>文章存档</span></ul>
+<ul class="panel_body">
+<div id="archive_list">
+<!--归档统计-->
+<li><a href="/ring0hx/article/month/2017/01">2017年01月</a><span>(1)</span></li><li><a href="/ring0hx/article/month/2015/06">2015年06月</a><span>(2)</span></li><li><a href="/ring0hx/article/month/2015/03">2015年03月</a><span>(2)</span></li><li><a href="/ring0hx/article/month/2015/02">2015年02月</a><span>(4)</span></li><li><a href="/ring0hx/article/month/2014/06">2014年06月</a><span>(1)</span></li><li><a href="/ring0hx/article/month/2013/11">2013年11月</a><span>(1)</span></li><li><a href="/ring0hx/article/month/2012/09">2012年09月</a><span>(2)</span></li><li><a href="/ring0hx/article/month/2012/06">2012年06月</a><span>(2)</span></li><li><a href="/ring0hx/article/month/2011/11">2011年11月</a><span>(3)</span></li><li><a href="/ring0hx/article/month/2011/10">2011年10月</a><span>(1)</span></li><li><a href="/ring0hx/article/month/2011/01">2011年01月</a><span>(1)</span></li><li><a href="/ring0hx/article/month/2010/09">2010年09月</a><span>(1)</span></li><li><a href="/ring0hx/article/month/2010/06">2010年06月</a><span>(1)</span></li><li><a href="/ring0hx/article/month/2008/11">2008年11月</a><span>(1)</span></li><li><a href="/ring0hx/article/month/2008/07">2008年07月</a><span>(1)</span></li><li><a href="/ring0hx/article/month/2007/05">2007年05月</a><span>(1)</span></li>
+</div>
+</ul>
+</div>
+<div id="hotarticls" class="panel tracking-ad" data-mod="popu_340">
+<ul class="panel_head">
+    <span>       
+阅读排行    </span>
+</ul>
+
+<ul class="panel_body itemlist">
+<li>
+<a href="/ring0hx/article/details/6152528" title="常用数据库 JDBC URL 格式">常用数据库 JDBC URL 格式</a><span>(66982)</span>
+</li>
+<li>
+<a href="/ring0hx/article/details/3242245" title="System.load 和 System.loadLibrary详解">System.load 和 System.loadLibrary详解</a><span>(48958)</span>
+</li>
+<li>
+<a href="/ring0hx/article/details/1605254" title="C++  Virtual详解">C++  Virtual详解</a><span>(28852)</span>
+</li>
+<li>
+<a href="/ring0hx/article/details/46376709" title="Unity5 如何做资源管理和增量更新">Unity5 如何做资源管理和增量更新</a><span>(25371)</span>
+</li>
+<li>
+<a href="/ring0hx/article/details/7946397" title="cocos2dx 内存管理">cocos2dx 内存管理</a><span>(17963)</span>
+</li>
+<li>
+<a href="/ring0hx/article/details/16341261" title="Lua 面向对象实现">Lua 面向对象实现</a><span>(15689)</span>
+</li>
+<li>
+<a href="/ring0hx/article/details/6858582" title="Java Threads 多线程10分钟参考手册">Java Threads 多线程10分钟参考手册</a><span>(12794)</span>
+</li>
+<li>
+<a href="/ring0hx/article/details/7677418" title="Box2D 射线和AABB的碰撞检测">Box2D 射线和AABB的碰撞检测</a><span>(12482)</span>
+</li>
+<li>
+<a href="/ring0hx/article/details/46440037" title="Unity3D Shader 入门">Unity3D Shader 入门</a><span>(9787)</span>
+</li>
+<li>
+<a href="/ring0hx/article/details/28891121" title="如何解决ios SIGPIPE 导致的崩溃">如何解决ios SIGPIPE 导致的崩溃</a><span>(8776)</span>
+</li>
+</ul>
+</div>
+<div id="hotarticls2" class="panel tracking-ad" data-mod="popu_341">
+<ul class="panel_head"><span>评论排行</span></ul>
+<ul class="panel_body itemlist">
+<li>
+<a href="/ring0hx/article/details/1605254" title="C++  Virtual详解">C++  Virtual详解</a><span>(31)</span>
+</li>
+<li>
+<a href="/ring0hx/article/details/6858582" title="Java Threads 多线程10分钟参考手册">Java Threads 多线程10分钟参考手册</a><span>(30)</span>
+</li>
+<li>
+<a href="/ring0hx/article/details/7021320" title="2011年的一些思考">2011年的一些思考</a><span>(14)</span>
+</li>
+<li>
+<a href="/ring0hx/article/details/46376709" title="Unity5 如何做资源管理和增量更新">Unity5 如何做资源管理和增量更新</a><span>(11)</span>
+</li>
+<li>
+<a href="/ring0hx/article/details/7946397" title="cocos2dx 内存管理">cocos2dx 内存管理</a><span>(10)</span>
+</li>
+<li>
+<a href="/ring0hx/article/details/3242245" title="System.load 和 System.loadLibrary详解">System.load 和 System.loadLibrary详解</a><span>(7)</span>
+</li>
+<li>
+<a href="/ring0hx/article/details/28891121" title="如何解决ios SIGPIPE 导致的崩溃">如何解决ios SIGPIPE 导致的崩溃</a><span>(5)</span>
+</li>
+<li>
+<a href="/ring0hx/article/details/6152528" title="常用数据库 JDBC URL 格式">常用数据库 JDBC URL 格式</a><span>(4)</span>
+</li>
+<li>
+<a href="/ring0hx/article/details/6978437" title="Box2D 内存管理 - 小型对象分配器（SOA）的实现">Box2D 内存管理 - 小型对象分配器（SOA）的实现</a><span>(2)</span>
+</li>
+<li>
+<a href="/ring0hx/article/details/7676295" title="Unity3d 双线性插值纹理图片缩放的实现">Unity3d 双线性插值纹理图片缩放的实现</a><span>(2)</span>
+</li>
+</ul>
+</div>
+<div id="newcomments" class="panel">
+<ul class="panel_head"><span>最新评论</span></ul>
+<ul class="panel_body itemlist">
+    <li>
+   
+         <a href="/ring0hx/article/details/46440037#comments">Unity3D Shader 入门</a>
+    <p style="margin:0px;"><a href="/Fenglele_Fans" class="user_name">Fenglele_Fans</a>:
+学习了，感谢
+    </p>
+    </li>
+    <li>
+   
+         <a href="/ring0hx/article/details/3242245#comments">System.load 和 System.loadLibrary详解</a>
+    <p style="margin:0px;"><a href="/zhangyuhao110" class="user_name">zhangyuhao110</a>:
+写的通俗易懂
+    </p>
+    </li>
+    <li>
+   
+         <a href="/ring0hx/article/details/3242245#comments">System.load 和 System.loadLibrary详解</a>
+    <p style="margin:0px;"><a href="/duskvampire" class="user_name">duskvampire</a>:
+您好，我今天部署应用时遇到了加载库的问题。    场景：将应用部署在windows环境中，调用dll...
+    </p>
+    </li>
+    <li>
+   
+         <a href="/ring0hx/article/details/3242245#comments">System.load 和 System.loadLibrary详解</a>
+    <p style="margin:0px;"><a href="/duskvampire" class="user_name">duskvampire</a>:
+您好，我今天部署应用时遇到了加载库的问题。    场景：将应用部署在windows环境中，调用dll...
+    </p>
+    </li>
+    <li>
+   
+         <a href="/ring0hx/article/details/16341261#comments">Lua 面向对象实现</a>
+    <p style="margin:0px;"><a href="/u012411014" class="user_name">u012411014</a>:
+请问lua的面向对象编程时，私密性和继承性能同时实现吗？
+    </p>
+    </li>
+    <li>
+   
+         <a href="/ring0hx/article/details/1605254#comments">C++  Virtual详解</a>
+    <p style="margin:0px;"><a href="/frogpeng" class="user_name">frogpeng</a>:
+收藏 暂时还没有看得太懂
+    </p>
+    </li>
+    <li>
+   
+         <a href="/ring0hx/article/details/1605254#comments">C++  Virtual详解</a>
+    <p style="margin:0px;"><a href="/Mr_warm" class="user_name">Mr_warm</a>:
+学习了！
+    </p>
+    </li>
+    <li>
+   
+         <a href="/ring0hx/article/details/1605254#comments">Unity3D Shader 入门</a>
+    <p style="margin:0px;"><a href="/xyz2840839" class="user_name">xyz2840839</a>:
+厉害了我的哥 苦苦寻找入门的方法 看完感觉豁然开朗了 感谢博主
+    </p>
+    </li>
+    <li>
+   
+         <a href="/ring0hx/article/details/6152528#comments">常用数据库 JDBC URL 格式</a>
+    <p style="margin:0px;"><a href="/Heel_Boy" class="user_name">Heel_Boy</a>:
+以后方便了
+    </p>
+    </li>
+    <li>
+   
+         <a href="/ring0hx/article/details/28891121#comments">如何解决ios SIGPIPE 导致的崩溃</a>
+    <p style="margin:0px;"><a href="/StreamZhai" class="user_name">StreamZhai</a>:
+同求啊！在哪里加？sd是什么？socket是什么？？
+    </p>
+    </li>
+</ul>
+</div>
+
+
+<div id="custom_column_21695577" class="panel">
+<ul class="panel_head"><span>我的关注</span></ul>
+<ul class="panel_body">
+
+<p><a href="http://www.arduino.cc/">开源硬件平台Arduino</a> </p>
+<p><a href="http://blog.csdn.net/column/details/Dijkstra.html">经典算法研究</a> </p>
+
+</ul>
+</div>    </div>
+    <div class="clear">
+    </div>
+
+                   <div class="tracking-ad" data-view="true"  data-mtp="63" data-order="40" data-con="ad_content_1260" style="width: 200px; height: 400px;">
+                         <div id="nav_show_top_stop" style="width: 200px;height: 500px;z-index:1000">
+                             <div id="cpro_u2734128">
+                                  <!-- 投放代码 -->                           
+                              <!-- 请置于所有广告位代码之前 -->
+                                <script src="http://dup.baidustatic.com/js/ds.js"></script>
+                                 <!-- 广告位：PC端-博客详情页-左侧button1-200*200 -->
+                                    <script>
+                                        (function () {
+                                            var s = "_" + Math.random().toString(36).slice(2);
+                                            document.write('<div id="' + s + '"></div>');
+                                            (window.slotbydup = window.slotbydup || []).push({
+                                                id: '4740881',
+                                                container: s,
+                                                size: '200,200',
+                                                display: 'inlay-fix'
+                                            });
+                                        })();
+                                    </script>
+                             </div>
+                             <div id="cpro_u3031287">
+                                  <!-- 投放代码 -->
+                                <!-- 请置于所有广告位代码之前 -->
+                                    <script src="http://dup.baidustatic.com/js/ds.js"></script>
+
+                                 <!-- 广告位：PC端-博客详情页-左侧button2-200*200 -->
+                                <script>
+                                    (function () {
+                                        var s = "_" + Math.random().toString(36).slice(2);
+                                        document.write('<div id="' + s + '"></div>');
+                                        (window.slotbydup = window.slotbydup || []).push({
+                                            id: '4740894',
+                                            container: s,
+                                            size: '200,200',
+                                            display: 'inlay-fix'
+                                        });
+                                    })();
+                                </script>
+
+                             </div>
+
+                         </div>
+                   </div>
+                <script type="text/javascript">
+                    setTimeout(function () {
+                        var naviga_offsetTop = 0;
+                        function naviga_stay_top() { var scrollTop = jQuery(document).scrollTop(); if (scrollTop > naviga_offsetTop) { jQuery("#nav_show_top_stop").css({ "position": "fixed" }); jQuery("#nav_show_top_stop").css({ "top": "0px" }); } else { jQuery("#nav_show_top_stop").css({ "position": "fixed" }); jQuery("#nav_show_top_stop").css({ "top": naviga_offsetTop - scrollTop + "px" }); } }
+                        function onload_function() { naviga_offsetTop = jQuery("#nav_show_top_stop").position().top; jQuery(window).bind("scroll", naviga_stay_top); jQuery(window).bind("mousewheel", naviga_stay_top); jQuery(document).bind("scroll", naviga_stay_top); jQuery(document).bind("mousewheel", naviga_stay_top); } jQuery(document).ready(onload_function);
+
+                    }, 200);
+                </script>                    
+
+           </div>   
+            <div class="clear">
+            </div>
+        </div>
+
+        
+
+
+
+
+
+
+
+
+    <script type="text/javascript" src="http://passport.csdn.net/content/loginbox/login.js"></script>
+<script type="text/javascript">
+    $(function () {
+        function __get_code_toolbar(snippet_id) {
+            return $("<span class='tracking-ad' data-mod='popu_167'><a href='https://code.csdn.net/snippets/"
+                    + snippet_id
+                    + "' target='_blank' title='在CODE上查看代码片'  style='text-indent:0;'><img src='https://code.csdn.net/assets/CODE_ico.png' width=12 height=12 alt='在CODE上查看代码片' style='position:relative;top:1px;left:2px;'/></a></span>"
+                    + "<span class='tracking-ad' data-mod='popu_170'><a href='https://code.csdn.net/snippets/"
+                    + snippet_id
+                    + "/fork' target='_blank' title='派生到我的代码片' style='text-indent:0;'><img src='https://code.csdn.net/assets/ico_fork.svg' width=12 height=12 alt='派生到我的代码片' style='position:relative;top:2px;left:2px;'/></a></span>");
+        }
+        
+        $("[code_snippet_id]").each(function () {
+            __s_id = $(this).attr("code_snippet_id");
+            if (__s_id != null && __s_id != "" && __s_id != 0 && parseInt(__s_id) > 70020) {
+                __code_tool = __get_code_toolbar(__s_id);
+                $(this).prev().find(".tools").append(__code_tool);
+            }
+        });
+
+        $(".bar").show();
+    });
+</script>
+
+
+
+
+
+    </div>
+     
+
+
+       <script type="text/javascript" src="http://static.blog.csdn.net/public/res/bower-libs/MathJax/MathJax.js?config=TeX-AMS_HTML"></script>   
+    
+    <script src="http://static.blog.csdn.net/scripts/csdn_blog_detail.min.js" type="text/javascript"></script>
+        
+    <script type="text/javascript" src="http://c.csdnimg.cn/blog/csdn_public_blog_detail.min.js?20170719001"></script>
+
+    <script type="text/javascript" src="http://medal.blog.csdn.net/showblogmedal.ashx?blogid=207364"></script>
+
+
+  <div id="a52b5334d" style="width: 1px; height: 1px; display: none;">
+                    <script id="adJs52b5334"></script>
+                    <script>document.getElementById("adJs52b5334").src = "http://ads.csdn.net/js/opt/52b5334.js?t=" + Math.random();</script>
+   </div>
+          
+    <div class="pop_CA_cover"  style="display:none"></div>
+    <div class="pop pop_CA"  style="display:none">
+          <div class="CA_header">
+            收藏助手
+            <span class="cancel_icon"  id="fapancle"  onclick="$('.pop_CA').hide();$('.pop_CA_cover').hide();"></span>
+          </div>
+          <iframe src="" id="fa" frameborder="0" width="100%" height="360"  scrolling="no" ></iframe>
+    </div>
+
+
+        <script type="text/javascript">
+
+            $(function () {
+                var fromjs = $("#fromjs");
+                if (fromjs.length > 0) {
+                    $("#fromjs .markdown_views pre").addClass("prettyprint");
+                    prettyPrint();
+
+                    $('pre.prettyprint code').each(function () {
+                        var lines = $(this).text().split('\n').length;
+                        var $numbering = $('<ul/>').addClass('pre-numbering').hide();
+                        $(this).addClass('has-numbering').parent().append($numbering);
+                        for (i = 1; i <= lines; i++) {
+                            $numbering.append($('<li/>').text(i));
+                        };
+                        $numbering.fadeIn(1700);
+                    });
+
+                    $('.pre-numbering li').css("color", "#999");
+                }
+            });
+
+            $(".markdown_views a[target!='_blank']").attr("target", "_blank");
+
+            //$(".toc a[target='_blank']").attr("target", "");
+
+            setTimeout(function () {
+                $(".toc a[target='_blank']").attr("target", "");
+            }, 500);
+
+        </script>
+
+</body>
+</html>   

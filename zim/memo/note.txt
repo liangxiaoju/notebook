@@ -8,3 +8,11 @@ Created Monday 29 February 2016
 1. 选择encrypt phone以后，android会先进minui再进系统，这过程中有些rc里面的服务会被kill掉然后重启，如果这些rc服务是oneshot的，kill掉以后会重启不了。
 2. Portable Storage的名字显示优先顺序：分区的fsLabel，卡的Label，xml里定义的默认“SD card”。
 3. AP侧的rmt_storage服务如果没有运行起来，qcom modem侧会发生watchdog timeout。
+4. 有些emmc csd 里面的data timeout时间太短，导致读写超时，添加'MMC_FIXUP("FJ27MB", CID_MANFID_SAMSUNG, 0x100, add_quirk_mmc, MMC_QUIRK_BROKEN_DATA_TIMEOUT)'
+5. 
+    03-03 17:56:44.440 E/AndroidRuntime(17439): FATAL EXCEPTION: main
+    03-03 17:56:44.440 E/AndroidRuntime(17439): Process: com.freedomrabbits.greetings, PID: 17439
+    03-03 17:56:44.440 E/AndroidRuntime(17439): java.lang.ArrayIndexOutOfBoundsException: length=2; index=2
+    03-03 17:56:44.440 E/AndroidRuntime(17439): 	at android.widget.AbsListView$RecycleBin.addScrapView(AbsListView.java:6660)
+
+    In getViewTypeCount your adapter is reporting that there are exactly 2 item view types, but your getItemViewType method returns the position which is not restricted to the range [0, 2) unless you only have a maximum of 2 items in your list. Whenever ListView asks for a position beyond the second, your adapter reports an invalid view type.

@@ -1,0 +1,23 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2017-08-22T15:37:11+08:00
+
+====== wifi ======
+Created Tuesday 22 August 2017
+
+TAGS: android wifi
+
+{{./wifi.png}}
+
+
+WifiService: handles remote WiFi operation requests by implementing the IWifiManager interface.
+
+WifiController: the class used to manage on/off state of WifiStateMachine for various operating modes (normal, airplane, wifi hotspot, etc.).
+
+WifiSettingsStore: Tracks the various settings (wifi toggle, airplane toggle, tethering toggle, scan mode toggle) and provides API to figure if wifi should be turned on or off.
+
+WifiStateMachine: Tracks the various states on STA and AP connectivity and handles bring up and shut down.
+
+WifiMonitor: Listens for events from the wpa_supplicant server, and passes them on to the StateMachine for handling. Runs in its own thread.
+
+WifiNative: Native calls for bring up/shut down of the supplicant daemon and for sending requests to the supplicant daemon.

@@ -1,0 +1,53 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2019-06-21T12:07:04+08:00
+
+====== proxy ======
+Created Friday 21 June 2019
+
+=== SSH端口本地转发 ===
+本地转发机制：
+	-L localport:remotehost:remotehostportsshserver
+ 
+选项：
+-f 后台启用
+-N 不打开远程shell，处于等待状态
+-g 启用网关功能
+ 
+举例：
+ssh–L 9527:telnetsrv:23 -N sshsrv
+telnet 127.0.0.1 9527
+当访问本机的9527的端口时，被加密后转发到sshsrv的ssh服务，再解密被转发到telnetsrv:23
+data < >localhost:9527 < > localhost:XXXXX < > sshsrv:22 < > sshrv:yyyyy < > telnetsrv:23
+ 
+流程解释：
+	数据一旦telnet以后，数据会发送到本机9527端口，再在本机开一个随机端口，充当ssh客户端，再把数据流量发送到22端口的ssh服务端，收到数据以后，解密数据，临时开一个随机端口充当客户端，再把流量发送到23端口telnet服务端
+
+
+=== SSH端口远程转发 ===
+远程转发机制：
+-R sshserverport:remotehost:remotehostportsshserver
+ 
+举例：
+ssh–R 9527:telnetsrv:23 –N sshsrv
+让sshsrv侦听9527端口的访问，如有访问，就加密后通过ssh服务转发请求到本机ssh客户端，再由本机解密后转发到telnetsrv:23
+Data < > sshsrv:9527 < > sshsrv:22 < > localhost:XXXXX < > localhost:YYYYY< >telnetsrv:23
+ 
+需求：
+在A(Centos7)上开启smtp服务（postfix)，B(Centos6)做跳板，C(Centos6-1)客户端给Centos7发送邮件
+ 
+流程解析：
+C-x->A    （拒绝访问）
+C-B->A      （通过远程代理，接受访问）   
+
+
+=== 动态端口转发 ===
+原理：
+当用firefox访问internet时，本机的1080端口做为代理服务器，firefox的访问请求被转发到sshserver上，由sshserver替之访问internet
+ 
+动态转发机制：
+ssh -N -D 1080 root@sshserver
+在本机firefox设置代理socket proxy:127.0.0.1:1080
+ 
+测试：
+curl --socks5 127.0.0.1:1080 http://zangfans.com

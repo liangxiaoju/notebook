@@ -22,8 +22,8 @@ eg.
 错误, flowers的运算结果是"hello", 把字符串"xxxx"赋给另一个字符串"hello"肯定是错误的.
 
 2.
-(setq 'flowers "hello")
+(setq flowers "hello")
 把字符串"hello"赋给变量flowers
-(setq 'flowers "xxxx")
+(setq flowers "xxxx")
 把字符串"xxxx"赋给变量flowers
 

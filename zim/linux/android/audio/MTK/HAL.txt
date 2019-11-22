@@ -1,0 +1,33 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2019-03-04T13:16:14+08:00
+
+====== HAL ======
+Created Monday 04 March 2019
+
+* HIDL interface:
+
+android.hardware.audio@4.0: hardware/interfaces/audio/4.0
+vendor.mediatek.hardware.audio@4.1: vendor/mediatek/proprietary/hardware/interfaces/audio/4.1
+
+* HIDL impl:
+
+vendor/mediatek/proprietary/hardware/audio/common/service/4.0
+
+android.hardware.audio@4.0-service-mediatek
+android.hardware.audio@4.0-impl-mediatek.so
+
+hidl entry: in DevicesFactory.cpp HIDL_FETCH_IDevicesFactory() will load audio.primary.$(platform).so
+
+* AUDIO_HARDWARE_MODULE_ID:
+
+vendor/mediatek/proprietary/hardware/audio/common/aud_drv/audio_hw_hal.cpp
+
+it will create AudioMTKHardwareInterface by call createMTKAudioHardware()
+
+
+* AudioMTKHardwareInterface:
+
+vendor/mediatek/proprietary/hardware/audio/common/V3/aud_drv/AudioALSAHardware.cpp
+''' hw = android::AudioALSAHardware::GetInstance() '''
+so it will return AudioALSAHardware class

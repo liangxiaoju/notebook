@@ -38,6 +38,8 @@ rsync - a fast, versatile, remote (and local) file-copying tool
 		* -l 仅拷贝链接本身
 		* -L 拷贝链接指向的内容
 		* -p 保留权限
+        * -u 只拷贝新的文件
+        * -P 断点续传
 
 === see also: ===
 	rsync --help

@@ -1,0 +1,367 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2016-10-11T14:22:05+08:00
+
+====== crash ======
+Created Tuesday 11 October 2016
+
+
+
+我们经常可以看到log中输出这样的信息
+
+ * * * * * * * * * * * * * * * *                                                             
+ Build fingerprint: 'Xiaomi/pisces/pisces:4.4.4/KTU84P/5.8.6:user/release-keys'
+ Revision: '0'
+ pid: 29088, tid: 29092, name: GC  >>> com.android.browser <<<
+ signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 00000000
+	 r0 00000000  r1 00000000  r2 0000bfc0  r3 00000000
+	 r4 415d30b0  r5 00000040  r6 00001000  r7 00000000
+	 r8 4008f028  r9 00001000  sl 54fc199f  fp 0000089b
+	 ip 00000000  sp 71838c8c  lr 41590c7b  pc 400b758c  cpsr 200a0010
+	 d0  0000000000004063  d1  0000000000000000
+	 d2  000000000000006e  d3  0000000000000001
+	... ...
+	... ...
+
+
+ backtrace:
+	 #00  pc 0002258c  /system/lib/libc.so (memset+48)
+	 #01  pc 00078c77  /system/lib/libdvm.so (dvmJitResetTable+66)
+	 #02  pc 00072f9f  /system/lib/libdvm.so
+	 #03  pc 00073695  /system/lib/libdvm.so (dvmCompilerPerformSafePointChecks()+16)
+	 #04  pc 00028bb8  /system/lib/libdvm.so
+	 #05  pc 0007212d  /system/lib/libdvm.so
+	 #06  pc 00054175  /system/lib/libdvm.so
+	 #07  pc 0000d1d0  /system/lib/libc.so (__thread_entry+72)
+	 #08  pc 0000d368  /system/lib/libc.so (pthread_create+240)
+
+	... ...
+
+这说明有程序发生了native crash，进程已经挂了，肯定是没办法自己打印出错误信息的，因此，就需要其他进程，在Android中就是debuggerd，来帮助崩溃进程来打印错误信息。
+
+debugged作为系统的一个常驻service，会始终监听一个端口来处理请求，每次程序崩溃，都会用ptrace获取程序运行堆栈等信息，并打印出来。
+
+下面，我们就来分析一下这个过程。
+
+在进程一开始启动的时候，都会进入debuggerd_init函数。在这里，做的最重要的操作就是设置信号处理函数。
+
+//* @bionic/linker/debugger.cpp
+//* debuggerd_init()
+
+	struct sigaction action;
+	memset(&action, 0, sizeof(action));
+	sigemptyset(&action.sa_mask);
+	action.sa_sigaction = debuggerd_signal_handler;
+	action.sa_flags = SA_RESTART | SA_SIGINFO;
+	action.sa_flags |= SA_ONSTACK;
+
+	sigaction(SIGABRT, &action, NULL);
+	sigaction(SIGBUS, &action, NULL);
+	sigaction(SIGFPE, &action, NULL);
+	sigaction(SIGILL, &action, NULL);
+	sigaction(SIGPIPE, &action, NULL);
+	sigaction(SIGSEGV, &action, NULL);
+#if defined(SIGSTKFLT)
+	sigaction(SIGSTKFLT, &action, NULL);
+#endif
+	sigaction(SIGTRAP, &action, NULL);
+}
+
+可以看到，上述几个信号的信号处理函数会被设置为debuggerd_signal_handler。
+现在假设我们的程序因为空指针异常崩溃了，则此时会产生SIGSEGV，内核就会帮我们回调debuggerd_signal_handler，同时将SIGSEGV的编号n以及信号的信息作为参数传入。要注意的是，在发生异常后，调用debuggerd_signal_handler时，仍是处于该崩溃的线程中。此时如果在信号处理函数debuggerd_signal_handler中gettid，得到的也是这个崩溃进程的tid。
+
+在函数debuggerd_signal_handler中，做了这么一些事
+
+//* @bionic/linker/debugger.cpp
+//* debuggerd_signal_handler(int n, siginfo_t* info, void*)
+	... ...
+	int s = socket_abstract_client(DEBUGGER_SOCKET_NAME, SOCK_STREAM);
+
+先是调用socket_abstract_client发送端口请求。
+
+//* @bionic/linker/debugger.cpp
+//* socket_abstract_client(const char* name, int type)
+	... ...
+	int err = TEMP_FAILURE_RETRY(connect(s, (sockaddr*) &addr, alen));
+	... ...
+}
+
+可以看到，在socket_abstract_client中用connect函数请求连接socket服务端。这里传入的参数addr，其初始化过程为
+
+	sockaddr_un addr;
+	... ...
+	memset(&addr, 0, sizeof(addr));
+	addr.sun_family = AF_LOCAL;
+	addr.sun_path[0] = 0;
+	memcpy(addr.sun_path + 1, name, namelen);
+
+这样就会请求连接名为DEBUGGER_SOCKET_NAME的端口。
+而DEBUGGER_SOCKET_NAME端口在哪里接收呢？看名字就知道是debuggerd进程了。
+
+那么，我们就来看一下degbuggerd的启动以及DEBUGGER_SOCKET_NAME 这个socket的建立过程。
+
+debuggerd作为一个由init进程启动的service，是在init.rc中配置好了的。
+
+service debuggerd /system/bin/debuggerd                                                                                      
+	class main
+
+init进程在启动时会直接执行/system/bin/debuggerd。由此便来到debuggerd的main函数部分。这里执行debuggerd是不带参数的，因此argc=1，即进入了do_server函数。
+
+//* @system/core/debuggerd/debuggerd.c
+int main(int argc, char** argv) {
+	if (argc == 1) {
+		return do_server();
+	}
+	... ...
+}
+
+记得开头的时候所有进程的信号处理函数都被设置为了debuggerd_signal_handler，这样所有崩溃都会由debuggerd处理。然而debuggerd如果自己崩溃了，是没办法自己来处理自己的崩溃请求的。
+因此do_server中做的事第一件事，是把信号处理重新设置为默认方式，这样debuggerd自己挂了后就直接由内核帮他收拾了。
+
+//* @system/core/debuggerd/debuggerd.c
+//  do_server()
+	... ...
+	/*
+	 * debuggerd crashes can't be reported to debuggerd.
+	 * Reset all of the crash handlers.
+	 */
+	signal(SIGILL, SIG_DFL);
+	signal(SIGABRT, SIG_DFL);
+	signal(SIGBUS, SIG_DFL);
+	signal(SIGFPE, SIG_DFL);
+	signal(SIGSEGV, SIG_DFL);
+#ifdef SIGSTKFLT
+	signal(SIGSTKFLT, SIG_DFL);
+#endif
+
+	// Ignore failed writes to closed sockets
+	signal(SIGPIPE, SIG_IGN);
+	... ...
+	act.sa_handler = SIG_DFL;
+	sigemptyset(&act.sa_mask);
+	sigaddset(&act.sa_mask,SIGCHLD);
+	act.sa_flags = SA_NOCLDWAIT;
+	sigaction(SIGCHLD, &act, 0);
+
+debuggerd创建一个服务端的名为DEBUGGER_SOCKET_NAME的端口，接着便进入了主循环中。在主循环中，调用accept函数不断等待来自客户端的连接。一旦收到连接请求，便调用handle_request处理请求。
+
+//* @system/core/debuggerd/debuggerd.c
+//  do_server()
+
+	s = socket_local_server(DEBUGGER_SOCKET_NAME,
+			ANDROID_SOCKET_NAMESPACE_ABSTRACT, SOCK_STREAM);
+	if(s < 0) return 1;
+	fcntl(s, F_SETFD, FD_CLOEXEC);
+
+	LOG("debuggerd: " __DATE__ " " __TIME__ "\n");
+
+	for(;;) {
+		struct sockaddr addr;
+		socklen_t alen;
+		int fd;
+
+		alen = sizeof(addr);
+		XLOG("waiting for connection\n");
+		fd = accept(s, &addr, &alen);
+		if(fd < 0) {
+			XLOG("accept failed: %s\n", strerror(errno));
+			continue;
+		}
+
+		fcntl(fd, F_SETFD, FD_CLOEXEC);
+
+		handle_request(fd);
+	}
+	return 0;
+}
+
+我们刚刚在崩溃进程的信号处理函数中的connect，就会在此被accept到。进而进入到handle_request进行对崩溃进程的处理。
+
+//* @system/core/debuggerd/debuggerd.c
+//  handle_request(int fd)
+
+	XLOG("handle_request(%d)\n", fd);
+
+	debugger_request_t request;
+	memset(&request, 0, sizeof(request));
+	int status = read_request(fd, &request);
+
+通过read_request函数初始化request结构体变量，其中记录了崩溃进程发送请求的一些信息。
+
+//* @system/core/debuggerd/debuggerd.c
+//  read_request(int fd, debugger_request_t* out_request)
+	... ...
+	int status = getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &cr, &len);
+	... ...
+	status = TEMP_FAILURE_RETRY(poll(pollfds, 1, 3000));
+	... ...
+	status = TEMP_FAILURE_RETRY(read(fd, &msg, sizeof(msg)));
+	... ...
+	out_request->action = msg.action;
+	out_request->tid = msg.tid;
+	out_request->pid = cr.pid;
+	out_request->uid = cr.uid;
+	out_request->gid = cr.gid;
+	out_request->abort_msg_address = msg.abort_msg_address;
+
+	if (msg.action == DEBUGGER_ACTION_CRASH) {
+		/* Ensure that the tid reported by the crashing process is valid. */
+		char buf[64];
+		struct stat s;
+		enable_etb_trace(cr);
+		snprintf(buf, sizeof buf, "/proc/%d/task/%d", out_request->pid, out_request->tid);
+		if(stat(buf, &s)) {
+			LOG("tid %d does not exist in pid %d. ignoring debug request\n",
+					out_request->tid, out_request->pid);
+			return -1;
+		}
+	}
+	... ...
+
+getsockopt获取进程信息，往requset中填入值，因为是进程崩溃了，之前提到过，崩溃进程发送的是DEBUGGER_ACTION_CRASH，因此还会校验tid是否属于相应的pid。这个tid是从socket请求中中读取的msg变量中取得，而pid是从连接信息中通过c标准调用函数getsockopt获得。
+
+此处用poll等待值的传入，如果客户端有write，就会使得服务端监听的poll返回。并用read读取msg。
+
+我们再回到崩溃进程，这里是客户端，也正是他write了msg。
+
+//* @bionic/linker/debugger.cpp
+//  debuggerd_signal_handler(int n, siginfo_t* info, void*)
+	... ...
+	int s = socket_abstract_client(DEBUGGER_SOCKET_NAME, SOCK_STREAM);
+
+	if (s >= 0) {
+		debugger_msg_t msg;
+		msg.action = DEBUGGER_ACTION_CRASH;
+		msg.tid = tid;
+		msg.abort_msg_address = reinterpret_cast<uintptr_t>(gAbortMessage);
+		int ret = TEMP_FAILURE_RETRY(write(s, &msg, sizeof(msg)));
+
+调用信号处理函数debuggerd_signal_handler时，仍是处于该崩溃的线程中，因此，gettid获取到的是崩溃线程自己的tid。然后写入action为DEBUGGER_ACTION_CRASH，再将msg写入socket端口。
+
+另一头的debuggerd读取到了msg，并根据msg在read_request中初始化request，并依据request来做剩下的操作。
+
+现在，正式开始debuggerd对崩溃进程的处理。
+
+//* @system/core/debuggerd/debuggerd.c
+//  handle_request(int fd)
+	... ...
+	int status = read_request(fd, &request);
+	if (!status) {
+		... ...
+		if (ptrace(PTRACE_ATTACH, request.tid, 0, 0)) {
+			LOG("ptrace attach failed: %s\n", strerror(errno));
+		} else {
+			bool detach_failed = false;
+			bool attach_gdb = should_attach_gdb(&request);
+			if (TEMP_FAILURE_RETRY(write(fd, "\0", 1)) != 1) {
+
+首先，读取request成功后，debuggerd会对崩溃的线程进行PTRACE_ATTACH，PTRACE_ATTACH的同时，会向被attach的进程，也就是这里的崩溃进程，发出SIGSTOP信号。这时由于崩溃进程正在read，卡在内核态中，并不会收到信号停止运行。而只有在debuggerd执行了write(fd, “\0”, 1)之后。那边的read得以返回，而在此时接受到了SIGSTOP信号，这时才使得崩溃线程在read的时候真正停住了。
+
+				... ...
+				for (;;) {
+					int signal = wait_for_signal(request.tid, &total_sleep_time_usec);
+
+debuggerd接着往下走，进入到for循环中，PTRACE_ATTACH之后，崩溃线程就会变成debuggerd的子进程，此时wait_for_signal可以接收到指定子线程，也就是崩溃线程的信号，因此等到的就是刚才PTRACE_ATTACH的时候产生的SIGSTOP。在switch语句中对SIGSTOP做相应处理。
+
+					switch (signal) {
+					case SIGSTOP:
+						if (request.action == DEBUGGER_ACTION_DUMP_TOMBSTONE) {
+							... ...
+						} else if (request.action == DEBUGGER_ACTION_DUMP_BACKTRACE) {
+							... ...
+						} else {
+							// ... log ...
+							status = ptrace(PTRACE_CONT, request.tid, 0, 0);
+							// ... log ...                            
+							continue; /* loop again */
+						}
+
+此时取得的对应action为DEBUGGER_ACTION_CRASH，对此做的相应处理便是PTRACE_CONT与continue。
+
+PTRACE_CONT会使得crash进程继续走，之前崩溃进程停住的地方从read开始得以继续执行。
+而执行continue会回到刚才for循环开始，用wait_for_signal等待崩溃线程的信号。
+
+回到崩溃线程，debuggerd_signal_handler函数中
+
+//* @bionic/linker/debugger.cpp
+//  debuggerd_signal_handler(int n, siginfo_t* info, void*)
+
+			ret = TEMP_FAILURE_RETRY(read(s, &tid, 1));
+	... ...
+	... ...
+
+	signal(n, SIG_DFL);
+
+	switch (n) {
+		case SIGABRT:
+		case SIGFPE:
+		case SIGPIPE:
+#ifdef SIGSTKFLT
+		case SIGSTKFLT:
+#endif
+			(void) tgkill(getpid(), gettid(), n);
+			break;
+		default:    // SIGILL, SIGBUS, SIGSEGV
+			break;
+	}
+
+首先，把信号处理方式设为默认，这样下次捕获到该信号时就不会再掉入处理函数debuggerd_signal_handler中。
+
+然后，再次抛出异常该信号。
+对于主动引发的信号，需要重新抛出，因为这类异常在恢复到原来的现场后是会继续执行的，如果不手动再次抛出，线程会直接继续执行下去，略过此次的错误，这不是我们想要的。
+对于而其他由于异常后kernel产生的信号，在信号处理函数结束后，会恢复到之前的现场，再次引发本来的异常，产生原来的信号。
+需要注意的是，虽然此时已经signal(n, SIG_DFL)将信号处理设置为默认方式了，但由于debuggerd还在ATTACH着，在没有DETACH前，再次引发的信号还是由debuggerd进行处理。
+
+现在再回到debuggerd中，
+记得我们回到了for循环的开头，此时wait_for_signal就可以接收到这个后来再次发出的信号了。
+
+					case SIGILL:
+					case SIGABRT:
+					case SIGBUS:
+					case SIGFPE:
+					case SIGSEGV:
+					case SIGPIPE:
+#ifdef SIGSTKFLT
+					case SIGSTKFLT:
+#endif
+						{
+						XLOG("stopped -- fatal signal\n");
+						// ... log ...
+						kill(request.pid, SIGSTOP);
+
+						tombstone_path = engrave_tombstone(request.pid, request.tid,
+								signal, request.abort_msg_address, !attach_gdb, false,
+								&detach_failed, &total_sleep_time_usec);
+						break;
+
+首先会调用kill对整个崩溃进程发送SIGSTOP，使得进程中的所有线程，包含崩溃的线程和其他还在正常运行的线程都停住。可以回到开头看到linker默认定义信号处理函数的地方没有SIGSTOP，因为SIGSTOP的默认处理是不会被忽略和也无法重定义的，因此所有线程确实会被停下来而不会再次触发新的信号处理函数。
+这里需要将其他线程都停下的原因是，原来已经有一个线程崩溃了，说明进程已经是异常的状态。而其他线程若继续运行，也可能会触发另外的异常信号，这样会干扰我们接下来打印堆栈和事后对异常根本原因的分析。因此停下来后我们可以尽可能的保留住一开始触发异常信号的现场。
+在停止进程后，便可以开始调用engrave_tombstone打印tombstone崩溃信息了。
+
+				if (ptrace(PTRACE_DETACH, request.tid, 0, 0)) {
+					LOG("ptrace detach from %d failed: %s\n", request.tid, strerror(errno));
+					detach_failed = true;
+				}
+
+到这里，debuggerd的使命就已经完成了，因此就可以PTRACE_DETACH异常线程，
+
+			/* resume stopped process (so it can crash in peace). */
+			kill(request.pid, SIGCONT);
+
+由于之前发送了SIGSTOP，因此还需要再发送SIGCONT让线程再次运行下去，这样会重新触发新的异常，由kernel回收进程，如果有进行设置的话还会做coredump之类的操作。
+这里你可能会有疑问，我们之前对于一些主动抛异常的信号，有进行重新抛出的操作，而这里并没有做这样的操作，那么，在继续执行后，原来某些主动Abort的异常会不会就这样忽略了呢？
+答案在abort的实现中，。。。。。
+
+至此，对于此次发生的崩溃debuggerd已经处理完毕，于是回到do_server的for循环中接着accept下一次socket请求。
+
+我们来回顾一下，一共做了多少次信号处理。以空指针异常为例。
+第一次，是在程序崩溃的时候。这时发出的是异常信号SIGSEGV，信号处理函数为程序一开始就注册的debuggerd_signal_handler，使得程序向debuggerd发送处理请求。
+第二次，是debuggerd在ptrace attach时发送的SIGSTOP信号，此时是由debuggerd进行处理，获取信号后使程序在read后继续运行，并将信号处理设置为默认方式，这样下次异常信号将不会由debuggerd_signal_handler处理。
+第三次，是程序继续运行后再次发出的异常信号SIGSEGV，这时由于仍然被attach着，还是由debuggerd处理。此时debuggerd会进行tombstone的操作。接着detach进程，并让程序继续运行。
+第四次，程序在被debuggerd detach后继续触发异常信号SIGSEGV，这时走的是默认处理方式，kernel会进行coredump以及回收进程资源等操作。
+
+因此，一共进行了四次信号处理过程。每一次的目的都加粗显示了，可以看到这四次都是必不可少的。
+顺带提一下，其实进程还收到了一次SIGSTOP信号，是在debuggerd要触发tombstone之前做的kill(request.pid, SIGSTOP)，然而这次没有wait它，而是在tombstone结束后kill(request.pid, SIGCONT)消除了SIGSTOP信号使程序继续往下走。
+
+分析完整个过程，我们可以知道，如果不需要tombstone，信号可以直接走默认处理，这样kernel在崩溃后直接回收进程。debuggerd也不需要了，上述的所有环节都是多余的。
+因此大费周章的目的，就是为了输出崩溃信息，获取tombstone。

@@ -11,3 +11,11 @@ keytool -exportcert -alias androiddebugkey -keystore path-to-debug-or-production
 
 #http-proxy-host = 188.241.141.112
 #http-proxy-port = 7808
+
+* multicast & broadcast
+ipv4:
+    1. if android set as AP, there is no route table for multicast, you have to use broadcast;
+    2. if android connect to an AP, there is route table for multicast, you can use multicast or broadcast;
+
+ipv6:
+    set as AP or connect to AP, multicast is ok;

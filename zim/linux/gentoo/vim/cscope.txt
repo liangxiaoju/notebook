@@ -6,16 +6,17 @@ Creation-Date: 2012-01-07T11:15:35+08:00
 Created 星期六 07 一月 2012
 
   It is designed to answer questions like:
-       * Where is this symbol used? **s**
-       * Where is it defined?	**g**
-       * Where did this variable get its value?	**
-       * What is this global symbol's definition?	**g**
-       * Where is this function in the source files?	**g**
-       * What functions call this function?	**c**
-       * What functions are called by this function?	**d**
-       * Where does the message "out of space" come from?	**t**
-       * Where is this source file in the directory structure?	**f**
-       * What files include this header file?	**i**
+	   * Where is this symbol used? **s**
+	   * Where is it defined?	**g**
+	   * Where did this variable get its value?	**
+	   * What is this global symbol's definition?	**g**
+	   * Where is this function in the source files?	**g**
+	   * What functions call this function?	**c**
+	   * What functions are called by this function?	**d**
+	   * Where does the message "out of space" come from?	**t**
+	   * Where is this source file in the directory structure?	**f**
+	   * What files include this header file?	**i**
+
 
 ==== Usage ====
 ** 创建数据库 **
@@ -52,7 +53,7 @@ Created 星期六 07 一月 2012
 	  set nocsverb
 	  " add any database in current directory
 	  if filereadable("cscope.out")
-	      cs add cscope.out
+		  cs add cscope.out
 	  endif
 	endif
 
@@ -64,6 +65,7 @@ Created 星期六 07 一月 2012
 	nmap <C-a>f :cs find f <C-R>=expand("<cfile>")<CR><CR>
 	nmap <C-a>i :cs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
 	nmap <C-a>d :cs find d <C-R>=expand("<cword>")<CR><CR>
+
 
 ==== See Also ====
 	* man cscope
